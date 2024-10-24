@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 # "-DCMAKE_TOOLCHAIN_FILE=M:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
+# set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 # add fmt, nlohmann/json, and gtest
 find_package(fmt CONFIG REQUIRED)
@@ -14,6 +14,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(waver
 	main.cpp
+		lexer.hpp
 )
 
 target_link_libraries(waver
