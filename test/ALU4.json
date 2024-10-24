@@ -1,0 +1,329 @@
+{
+    "modules": {
+        "ALU4": {
+            "variables": {
+                "#": {
+                    "reference": "op_add",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "$": {
+                    "reference": "is_eq",
+                    "size": "1",
+                    "type": "wire"
+                },
+                ")": {
+                    "reference": "lhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "*": {
+                    "reference": "rhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "+": {
+                    "reference": "op",
+                    "size": "3",
+                    "type": "wire"
+                },
+                ",": {
+                    "reference": "out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "-": {
+                    "reference": "zero",
+                    "size": "1",
+                    "type": "wire"
+                },
+                ".": {
+                    "reference": "overflow",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "/": {
+                    "reference": "carry",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "0": {
+                    "reference": "sel",
+                    "size": "8",
+                    "type": "wire"
+                },
+                "1": {
+                    "reference": "cla4_out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "2": {
+                    "reference": "op_sub",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "3": {
+                    "reference": "op_not_lhs",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "4": {
+                    "reference": "not_lhs_out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "5": {
+                    "reference": "op_and",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "6": {
+                    "reference": "and_out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "7": {
+                    "reference": "op_or",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "8": {
+                    "reference": "or_out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "9": {
+                    "reference": "op_xor",
+                    "size": "1",
+                    "type": "wire"
+                },
+                ":": {
+                    "reference": "xor_out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                ";": {
+                    "reference": "op_lhs_eq",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "<": {
+                    "reference": "op_lhs_less",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "=": {
+                    "reference": "is_rhs_bigger",
+                    "size": "1",
+                    "type": "wire"
+                }
+            }
+        },
+        "TOP": {
+            "variables": {
+                ")": {
+                    "reference": "lhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "*": {
+                    "reference": "rhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "+": {
+                    "reference": "op",
+                    "size": "3",
+                    "type": "wire"
+                },
+                ",": {
+                    "reference": "out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "-": {
+                    "reference": "zero",
+                    "size": "1",
+                    "type": "wire"
+                },
+                ".": {
+                    "reference": "overflow",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "/": {
+                    "reference": "carry",
+                    "size": "1",
+                    "type": "wire"
+                }
+            }
+        },
+        "cla4": {
+            "variables": {
+                "%": {
+                    "reference": "carry_in",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "&": {
+                    "reference": "rhs_inv",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "'": {
+                    "reference": "gen",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "(": {
+                    "reference": "prop",
+                    "size": "4",
+                    "type": "wire"
+                },
+                ")": {
+                    "reference": "lhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "*": {
+                    "reference": "rhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                ".": {
+                    "reference": "overflow",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "/": {
+                    "reference": "carry_out",
+                    "size": "1",
+                    "type": "wire"
+                },
+                "1": {
+                    "reference": "out",
+                    "size": "4",
+                    "type": "wire"
+                },
+                ">": {
+                    "reference": "carries",
+                    "size": "5",
+                    "type": "wire"
+                }
+            }
+        },
+        "cmp4_identical": {
+            "variables": {
+                "$": {
+                    "reference": "out",
+                    "size": "1",
+                    "type": "wire"
+                },
+                ")": {
+                    "reference": "lhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "*": {
+                    "reference": "rhs",
+                    "size": "4",
+                    "type": "wire"
+                }
+            }
+        },
+        "cmp4_rhs": {
+            "variables": {
+                ")": {
+                    "reference": "lhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "*": {
+                    "reference": "rhs",
+                    "size": "4",
+                    "type": "wire"
+                },
+                "=": {
+                    "reference": "out",
+                    "size": "1",
+                    "type": "wire"
+                }
+            }
+        },
+        "d38": {
+            "variables": {
+                "+": {
+                    "reference": "in",
+                    "size": "3",
+                    "type": "wire"
+                },
+                "0": {
+                    "reference": "out",
+                    "size": "8",
+                    "type": "wire"
+                },
+                "?": {
+                    "reference": "enable_signal",
+                    "size": "1",
+                    "type": "wire"
+                }
+            }
+        }
+    },
+    "signal_values": {
+        "1": {
+            "#": "1",
+            "$": "0",
+            "%": "0",
+            "&": "0010",
+            "'": "0010",
+            "(": "1011",
+            ")": "1011",
+            "*": "0010",
+            "+": "000",
+            ",": "1111",
+            "-": "0",
+            ".": "0",
+            "/": "0",
+            "0": "00000001",
+            "1": "1111",
+            "2": "0",
+            "3": "0",
+            "4": "0100",
+            "5": "0",
+            "6": "0010",
+            "7": "0",
+            "8": "1011",
+            "9": "0",
+            ":": "1001",
+            ";": "0",
+            "<": "0",
+            "=": "1",
+            ">": "00100",
+            "?": "1"
+        },
+        "2": {
+            "#": "0",
+            "%": "1",
+            "&": "1101",
+            "'": "1001",
+            "(": "1111",
+            "+": "001",
+            ",": "0000",
+            "-": "1",
+            "/": "1",
+            "0": "00000010",
+            "1": "0000",
+            "2": "1",
+            ">": "11111"
+        },
+        "3": {
+            "+": "010",
+            ",": "0100",
+            "-": "0",
+            "0": "00000100",
+            "2": "0",
+            "3": "1"
+        }
+    }
+}
