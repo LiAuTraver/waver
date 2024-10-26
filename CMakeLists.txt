@@ -20,20 +20,24 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(boost COMPONENTS contracts CONFIG REQUIRED)
 add_executable(waver
-	main.cpp
-	lexer.hpp
+        main.cpp
+        include/net/ancillarycat/waver/waver.hpp
+        include/net/ancillarycat/waver/internal/config.hpp
+        include/net/ancillarycat/waver/internal/components.hpp
+        include/net/ancillarycat/waver/internal/lexer.hpp
+        include/net/ancillarycat/waver/internal/parser.hpp
 )
 
 target_link_libraries(waver
-	PRIVATE
-	fmt::fmt
-	nlohmann_json::nlohmann_json
-	absl::base
+        PRIVATE
+        fmt::fmt
+        nlohmann_json::nlohmann_json
+        absl::base
 
-	# boost::contracts
+        # boost::contracts
 
-	# GTest::gtest
-	# GTest::gtest_main
+        # GTest::gtest
+        # GTest::gtest_main
 )
 
 # include(CTest)
