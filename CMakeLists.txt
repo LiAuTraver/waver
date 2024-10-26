@@ -4,23 +4,33 @@ project(waver LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
+# execute_process(
+# 	COMMAND dev
+# 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+# )
+
 # "-DCMAKE_TOOLCHAIN_FILE=M:/vcpkg/scripts/buildsystems/vcpkg.cmake"
 # set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 # add fmt, nlohmann/json, and gtest
 find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
 
+# find_package(GTest CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
+find_package(boost COMPONENTS contracts CONFIG REQUIRED)
 add_executable(waver
 	main.cpp
-		lexer.hpp
+	lexer.hpp
 )
 
 target_link_libraries(waver
 	PRIVATE
 	fmt::fmt
 	nlohmann_json::nlohmann_json
+	absl::base
+
+	# boost::contracts
 
 	# GTest::gtest
 	# GTest::gtest_main

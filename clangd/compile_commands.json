@@ -1,0 +1,8 @@
+[
+	{
+		"directory": "Z:/Cpp-Playground/waver/build",
+		"command": "C:\\PROGRA~1\\LLVM\\bin\\CLANG_~1.EXE -DABSL_CONSUME_DLL -DFMT_SHARED -isystem \"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/installed/x64-windows/include\" -O0 -std=gnu++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview @CMakeFiles\\waver.dir\\main.cpp.obj.modmap -o CMakeFiles\\waver.dir\\main.cpp.obj -c Z:\\Cpp-Playground\\waver\\main.cpp",
+		"file": "Z:\\Cpp-Playground\\waver\\main.cpp",
+		"output": "CMakeFiles\\waver.dir\\main.cpp.obj"
+	}
+]

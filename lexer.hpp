@@ -7,7 +7,6 @@
 #include <nlohmann/json.hpp>
 #include <print>
 #include <sstream>
-#include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
