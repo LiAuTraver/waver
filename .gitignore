@@ -47,3 +47,5 @@ sketch
 build
 
 *-build-*
+
+**/.cache/**
