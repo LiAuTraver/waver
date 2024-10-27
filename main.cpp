@@ -5,8 +5,8 @@
 #include <print>
 
 int main(const int argc, const char *const *const argv) {
-	std::filesystem::path						 source_file;
-	std::filesystem::path						 output_file;
+	std::filesystem::path source_file;
+	std::filesystem::path output_file;
 	if (argc == 1) {
 		source_file = R"(Z:\Cpp-Playground\waver\test\ALU4.vcd)";
 		output_file = R"(Z:\Cpp-Playground\waver\test\ALU4.json)";
@@ -20,6 +20,8 @@ int main(const int argc, const char *const *const argv) {
 		source_file = argv[1];
 		output_file = argv[2];
 	}
-	auto res = net::ancillarycat::waver::value_change_dump::parse(source_file);
+	auto j = nlohmann::json{net::ancillarycat::waver::value_change_dump::parse(source_file)
+														.value_or(net::ancillarycat::waver::value_change_dump{})};
+	std::println("{}", j.dump(2));
 	return 0;
 }

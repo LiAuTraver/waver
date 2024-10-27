@@ -30,85 +30,18 @@
 #include "config.hpp"
 #include "lexer.hpp"
 #include "vcd.hpp"
-#include "vcdfwd.hpp"
+#include "vcd_fwd.hpp"
+
+//////////////////////////////////////////////////////////////////////////////
+/// 		Declaration
+//////////////////////////////////////////////////////////////////////////////
 namespace net::ancillarycat::waver {
-struct port {
-	enum type {
-		kUnknown	= 0,
-		kInput		= 1,
-		kOutput		= 2,
-		kInout		= kInput | kOutput, // 3
-		kWire			= 4,
-		kRegistor = 8,
-	};
-	type				 type;
-	size_t			 width;
-	identifier_t identifier; // 1 or 2 characters
-	std::string	 name;
-	std::string	 reference; // [4:0], a[0], a[4:0]
-};
-class scope {
-public:
-	std::vector<std::shared_ptr<scope>> subscopes{};
-	inline constexpr std::string_view		get_name() const noexcept { return get_name_impl(); }
-
-public:
-	inline constexpr					scope() = default;
-	inline virtual constexpr ~scope() = default;
-
-private:
-	[[clang::always_inline]] constexpr virtual std::string_view get_name_impl() const noexcept = 0;
-};
-class module : public scope {
-public:
-	module &set_name(const std::string_view name) noexcept {
-		this->name = name;
-		return *this;
-	}
-	std::vector<port> ports;
-
-public:
-	inline constexpr					module() = default;
-	inline explicit constexpr module(const std::string_view name) noexcept : name(name) {}
-	inline virtual constexpr ~module() override = default;
-
-private:
-	virtual std::string_view get_name_impl() const noexcept override { return name; }
-	std::string							 name; // dont use string_view here! name will be `\0ame`, dunno why
-};
-class task : public scope {};
-
-struct timestamp {
-	time_t								time;
-	std::vector<change_t> changes;
-};
-
-struct version {};
-struct date {};
-struct timescale {};
-
-/// @brief Represents the header part of a VCD file, which contains the module
-/// definitions, timescale, and date
-struct header {
-	std::vector<std::shared_ptr<scope>> scopes;
-	version															version;
-	date																date;
-	timescale														timescale;
-};
-/// @brief Represents the value change part of a VCD file
-struct value_changes {
-	std::vector<timestamp> timestamps;
-};
-
-/// @brief initial value of ports
-struct dumpvars {
-	std::vector<change_t> changes;
-};
-
-
 /// @brief Represents a Value Change Dump (VCD) file
 class value_change_dump {
 	class parser {
+		friend class scope;
+		friend class module;
+
 	public:
 		inline constexpr explicit parser(value_change_dump &vcd) noexcept : vcd(vcd) {}
 
@@ -121,22 +54,23 @@ class value_change_dump {
 
 
 	public:
-		enum AC_NODISCARD parse_error : std::uint8_t;
+		enum WAVER_NODISCARD parse_error : std::uint8_t;
 		using value_type			= value_change_dump;
-		using lexer_t					= lexer;
 		using parse_error_t		= parse_error;
 		using reference				= value_type &;
 		using const_reference = const value_type &;
 		using pointer					= value_type *;
 		using const_pointer		= const value_type *;
-		using size_type				= lexer_t::size_type;
 		using string_t				= std::string;
+		using string_view_t		= std::string_view;
+		using size_type				= std::string::size_type;
+		using lexer_t					= lexer</* default template arguments */>;
 
 	public:
-		AC_NODISCARD inline constexpr reference				get() noexcept { return vcd; }
-		AC_NODISCARD inline constexpr const_reference get() const noexcept { return vcd; }
-		AC_NODISCARD inline constexpr pointer					data() const noexcept { return &vcd; }
-		AC_NODISCARD inline constexpr const_pointer		data() noexcept { return &vcd; }
+		WAVER_NODISCARD inline constexpr reference			 get() noexcept { return vcd; }
+		WAVER_NODISCARD inline constexpr const_reference get() const noexcept { return vcd; }
+		WAVER_NODISCARD inline constexpr pointer				 data() const noexcept { return &vcd; }
+		WAVER_NODISCARD inline constexpr const_pointer	 data() noexcept { return &vcd; }
 		inline Status load(const std::filesystem::path &filepath) noexcept { return lexer.load(filepath); }
 		inline Status load(string_t &&content) noexcept { return lexer.load(std::forward<string_t>(content)); }
 
@@ -193,19 +127,23 @@ public:
 			return {res};
 		if (auto res = parser.parse(); res != OkStatus())
 			return {res};
-		return vcd;
+		return {vcd};
 	}
-	inline json_t to_json() const {}
+	friend void to_json(json_t &j, const value_change_dump &vcd) {
+		to_json(j, vcd.header);
+		to_json(j, vcd.dumpvars);
+		to_json(j, vcd.value_changes);
+	}
 
 public:
 	header				header;
 	dumpvars			dumpvars;
 	value_changes value_changes;
 };
+} // namespace net::ancillarycat::waver
 //////////////////////////////////////////////////////////////////////////////
 ///				 Implementation
 //////////////////////////////////////////////////////////////////////////////
-} // namespace net::ancillarycat::waver
 namespace net::ancillarycat::waver {
 constexpr value_change_dump::value_change_dump(const value_change_dump &rhs) {
 	header				= rhs.header;
@@ -226,7 +164,7 @@ constexpr value_change_dump &value_change_dump::operator=(value_change_dump &&rh
 constexpr value_change_dump &value_change_dump::operator=(const value_change_dump &rhs) = default;
 
 
-enum AC_NODISCARD value_change_dump::parser::parse_error : std::uint8_t {
+enum WAVER_NODISCARD value_change_dump::parser::parse_error : std::uint8_t {
 	// success
 	kSuccess = 0,
 	// unrecoverable errors
@@ -433,12 +371,12 @@ value_change_dump::parser::parse_module(scope *parent) { // NOLINT(misc-no-recur
 	auto current_module = std::make_shared<module>();
 
 	if (token != empty_sv)
-		current_module->set_name(std::string(token));
+		current_module->name = {token.begin(), token.end()};
 	else
 		return parse_error_t::kUnexpectedEndOfFile;
 
 	// debug print
-	std::println("module name: {}", current_module->get_name());
+	// std::println("module name: {}", current_module->to_string_view());
 
 	token = lexer.consume();
 	if (token != keywords::$end)
@@ -461,9 +399,9 @@ value_change_dump::parser::parse_module(scope *parent) { // NOLINT(misc-no-recur
 		return parse_error_t::kInvalidScope;
 
 	if (parent)
-		parent->subscopes.emplace_back(current_module);
+		parent->subscopes.emplace_back(std::move(current_module));
 	else // if no parent, then it's the top module
-		vcd.header.scopes.emplace_back(current_module);
+		vcd.header.scopes.emplace_back(std::move(current_module));
 
 	return parse_error_t::kSuccess;
 }
@@ -500,7 +438,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 	for (; token != keywords::$end; token = lexer.consume()) {
 		reference += token;
 	}
-	current_module->ports.emplace_back(port{signal_type, signal_width, identifier, name, reference});
+	current_module->ports.emplace_back(signal_type, signal_width, identifier, name, reference);
 	return parse_error_t::kSuccess; /// token should be the one after `$end`
 }
 

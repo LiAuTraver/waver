@@ -4,9 +4,20 @@
 #include <string>
 #include <string_view>
 
-#ifndef AC_NODISCARD
-#define AC_NODISCARD [[nodiscard]]
+#ifndef WAVER_NODISCARD
+#define WAVER_NODISCARD [[nodiscard]]
 #endif
+
+#ifdef __clang__
+#define WAVER_FORCEINLINE [[clang::always_inline]]
+#elifdef __GNUC__
+#define WAVER_FORCEINLINE [[gnu::always_inline]]
+#elifdef _MSC_VER
+#define WAVER_FORCEINLINE __forceinline
+#else
+#define WAVER_FORCEINLINE inline
+#endif
+
 namespace net::ancillarycat::waver {
 using absl::AlreadyExistsError;
 using absl::InvalidArgumentError;
@@ -16,7 +27,7 @@ using absl::Status;
 using absl::StatusCode;
 using absl::StatusOr;
 using identifier_t = std::string;
-using time_t			 = size_t;
+// using time_t			 = size_t;
 using namespace std::string_view_literals;
 } // namespace net::ancillarycat::waver
 

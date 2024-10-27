@@ -23,9 +23,19 @@ add_executable(waver
         main.cpp
         include/net/ancillarycat/waver/waver.hpp
         include/net/ancillarycat/waver/internal/config.hpp
-        include/net/ancillarycat/waver/internal/vcdfwd.hpp
+        include/net/ancillarycat/waver/internal/vcd_fwd.hpp
         include/net/ancillarycat/waver/internal/lexer.hpp
         include/net/ancillarycat/waver/internal/vcd.hpp
+        include/net/ancillarycat/waver/internal/meta_elements.hpp
+)
+add_executable(test test.cpp
+        include/net/ancillarycat/waver/internal/meta_elements.hpp)
+
+target_link_libraries(test
+        PRIVATE
+        fmt::fmt
+        nlohmann_json::nlohmann_json
+        absl::base
 )
 
 target_link_libraries(waver
@@ -33,9 +43,6 @@ target_link_libraries(waver
         fmt::fmt
         nlohmann_json::nlohmann_json
         absl::base
-
-        # boost::contracts
-
         # GTest::gtest
         # GTest::gtest_main
 )
