@@ -5,7 +5,6 @@
 #include <print>
 
 int main(const int argc, const char *const *const argv) {
-	net::ancillarycat::waver::parser parser;
 	std::filesystem::path						 source_file;
 	std::filesystem::path						 output_file;
 	if (argc == 1) {
@@ -21,6 +20,6 @@ int main(const int argc, const char *const *const argv) {
 		source_file = argv[1];
 		output_file = argv[2];
 	}
-	auto _ = parser.load(source_file);
-	_			 = parser.parse();
+	auto res = net::ancillarycat::waver::value_change_dump::parse(source_file);
+	return 0;
 }

@@ -23,9 +23,9 @@ add_executable(waver
         main.cpp
         include/net/ancillarycat/waver/waver.hpp
         include/net/ancillarycat/waver/internal/config.hpp
-        include/net/ancillarycat/waver/internal/components.hpp
+        include/net/ancillarycat/waver/internal/vcdfwd.hpp
         include/net/ancillarycat/waver/internal/lexer.hpp
-        include/net/ancillarycat/waver/internal/parser.hpp
+        include/net/ancillarycat/waver/internal/vcd.hpp
 )
 
 target_link_libraries(waver
