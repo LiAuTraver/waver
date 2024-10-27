@@ -40,6 +40,8 @@ public:
 	using reference				= value_type &;
 	using const_reference = const value_type &;
 	using pointer					= value_type *;
+	using const_pointer		= const value_type *;
+	using size_type				= lexer_t::size_type;
 
 public:
 	[[nodiscard]] inline constexpr reference			 get() noexcept { return vcd; }
@@ -59,6 +61,7 @@ private:
 	parse_error_t parse_scope_fwd(scope *);
 	parse_error_t parse_module(scope *);
 	parse_error_t parse_variable(module *);
+	parse_error_t parse_body();
 
 private:
 	value_type			 vcd;
@@ -91,50 +94,22 @@ inline Status parser::parse() {
 	else
 		// token was at `$enddefinitions`, so does lexer.current(); call
 		// lexer.consume() should also yield `$enddefinitions`
-		lexer.consume(), lexer.consume();
+		lexer.consume(2); // token was at `$end` now
 
-	token = lexer.current();
-	if (auto res = parse_value_changes(); res != parse_error_t::kSuccess)
-		return InvalidArgumentError("Failed to parse value changes");
-	else
-		(void)res;
+	token = lexer.current(); // token should be the first token after `$end`
+	auto _ = parse_body();
 
 	return OkStatus();
 }
 inline parser::parse_error_t parser::parse_value_changes() {
 	for (/*token = lexer.current()*/; token != lexer.back(); token = lexer.current()) {
-		// if (token == keywords::$dumpvars) {
-		// 	if (auto res = parse_dumpvars(); res != parse_error_t::kSuccess)
-		// 		return res;
-		// 	else
-		// 		continue;
-		// }
-		// if (token == keywords::$dumpall) {
-		// 	if (auto res = parse_dumpall(); res != parse_error_t::kSuccess)
-		// 		return res;
-		// 	else
-		// 		continue;
-		// }
-		// if (token == keywords::$dumpon) {
-		// 	if (auto res = parse_dumpon(); res != parse_error_t::kSuccess)
-		// 		return res;
-		// 	else
-		// 		continue;
-		// }
-		// if (token == keywords::$dumpoff) {
-		// 	if (auto res = parse_dumpoff(); res != parse_error_t::kSuccess)
-		// 		return res;
-		// 	else
-		// 		continue;
-		// }
 		if (token.starts_with('#')) {
 			timestamp timestamp;
 			if (const auto [_, ec] = std::from_chars(token.data() + 1, token.data() + token.size(), timestamp.time);
 					ec != std::errc())
 				return parse_error_t::kInvalidTimestamp;
-			lexer.consume();
-			token = lexer.consume();
-			for (/*token = lexer.current()*/; token != lexer.back() && not token.starts_with('#'); token = lexer.current()) {
+			token = lexer.consume(2);
+			for (token = lexer.current(); token != lexer.back() && not token.starts_with('#'); token = lexer.current()) {
 				if (token.size() == 2) {
 					// means it's a one-bit signal
 					timestamp.changes.emplace_back(identifier_t{token.back()}, timestamp::value_t{token.front()});
@@ -254,7 +229,8 @@ inline parser::parse_error_t parser::parse_scope_fwd(scope *parent) { // NOLINT(
 			return parse_error_t::kUnknownKeyword;
 		}
 		if (token == keywords::module) {
-			auto _ = parse_module(parent);
+			if (auto res = parse_module(parent); res != parse_error_t::kSuccess)
+				return res;
 			return parse_error_t::kSuccess;
 		}
 	}
@@ -292,7 +268,7 @@ inline parser::parse_error_t parser::parse_module(scope *parent) { // NOLINT(mis
 		}
 	}
 	// token = `$upscope`
-	token = lexer.consume();
+	lexer.consume();
 	token = lexer.consume();
 	if (token != keywords::$end)
 		return parse_error_t::kInvalidScope;
@@ -339,5 +315,22 @@ inline parser::parse_error_t parser::parse_variable(module *current_module) {
 	}
 	current_module->ports.emplace_back(port{signal_type, signal_width, identifier, name, reference});
 	return parse_error_t::kSuccess; /// token should be the one after `$end`
+}
+inline parser::parse_error_t parser::parse_body() {
+	if (token.starts_with('#')) {
+		// parse value changes
+		if (auto res = parse_value_changes(); res != parse_error_t::kSuccess)
+			return res;
+		else
+			(void)res; // temporary do nothing
+	} else if (token == keywords::$dumpvars) {
+		// parse dumpvars
+	} else if (token == keywords::$dumpall) {
+		// parse dumpall
+	} else if (token == keywords::$dumpon) {
+		// parse dumpon
+	} else if (token == keywords::$dumpoff) {
+		// parse dumpoff
+	}
 }
 } // namespace net::ancillarycat::waver

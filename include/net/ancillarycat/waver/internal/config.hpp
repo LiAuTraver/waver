@@ -2,6 +2,10 @@
 #include <absl/status/status.h>
 #include <string>
 #include <string_view>
+
+#ifndef AC_NODISCARD
+#define AC_NODISCARD [[nodiscard]]
+#endif
 namespace net::ancillarycat::waver {
 using absl::AlreadyExistsError;
 using absl::InvalidArgumentError;

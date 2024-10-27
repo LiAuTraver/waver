@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 #include "components.hpp"
+#include "config.hpp"
 
 namespace net::ancillarycat::waver {
 class file_reader {
@@ -32,13 +33,13 @@ public:
 	inline constexpr ~file_reader() noexcept = default;
 
 public:
-	[[nodiscard]] inline std::optional<std::string> get_contents() const {
+	AC_NODISCARD inline std::string get_contents() const {
 		std::ifstream file(filepath);
 		if (not file)
-			return std::nullopt;
+			return std::string{};
 		std::stringstream ss;
 		ss << file.rdbuf();
-		return std::make_optional(ss.str());
+		return ss.str();
 	}
 
 private:
@@ -46,6 +47,8 @@ private:
 };
 
 class lexer {
+public:
+	using size_type = std::string::size_type;
 public:
 	inline explicit constexpr lexer() = default;
 
@@ -56,13 +59,13 @@ public:
 	Status load(const std::string &content);
 	Status lex();
 
-	[[nodiscard]] std::string_view front() const noexcept;
-	[[nodiscard]] std::string_view current() const noexcept;
-	[[nodiscard]] std::string_view back() const noexcept;
-	[[nodiscard]] bool						 is_empty() const noexcept;
+	AC_NODISCARD std::string_view front() const noexcept;
+	AC_NODISCARD std::string_view current() const /*noexcept*/;
+	AC_NODISCARD std::string_view back() const noexcept;
+	AC_NODISCARD bool							is_empty() const noexcept;
 
 	/// @note get the next token and ADVANCE the cursor
-	std::string_view consume();
+	std::string_view consume(size_type step = 1);
 	lexer						&print_tokens();
 
 private:
@@ -76,10 +79,9 @@ inline Status lexer::load(const std::filesystem::path &filepath) {
 	if (not contents.empty())
 		return AlreadyExistsError("File already loaded");
 	file_reader reader(filepath);
-	const auto	maybe_contents = reader.get_contents();
-	if (not maybe_contents)
+	contents = reader.get_contents();
+	if (contents.empty())
 		return NotFoundError("Unable to open file: " + filepath.string());
-	contents = *maybe_contents;
 	return OkStatus();
 }
 inline Status lexer::load(const std::string &content) {
@@ -99,6 +101,7 @@ inline Status lexer::lex() {
 			| std::ranges::views::transform([](auto &&token_view) { return std::string_view(token_view.begin(), token_view.end()); })
 			| std::ranges::to<std::vector<std::string_view>>();
 	// clang-format on
+	token_views.emplace_back(empty_sv);
 	return OkStatus();
 }
 inline std::string_view lexer::front() const noexcept {
@@ -107,7 +110,7 @@ inline std::string_view lexer::front() const noexcept {
 
 	return token_views.front();
 }
-inline std::string_view lexer::current() const noexcept {
+inline std::string_view lexer::current() const /*noexcept*/ {
 
 	boost::contract::check c = boost::contract::function().precondition([&] { return cursor < token_views.size(); });
 
@@ -119,10 +122,12 @@ inline std::string_view lexer::back() const noexcept {
 
 	return token_views.back();
 }
-inline std::string_view lexer::consume() {
-	if (cursor >= token_views.size())
-		return empty_sv;
-	return token_views[cursor++];
+inline std::string_view lexer::consume(const lexer::size_type step) {
+	boost::contract::check c = boost::contract::function().precondition([&] { return cursor < token_views.size(); });
+
+	auto token = token_views[cursor];
+	cursor += step;
+	return token;
 }
 inline lexer &lexer::print_tokens() {
 	for (auto &&token : token_views)

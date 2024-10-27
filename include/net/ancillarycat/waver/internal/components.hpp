@@ -44,7 +44,7 @@ public:
 	inline constexpr std::string_view		get_name() const noexcept { return get_name_impl(); }
 
 public:
-	inline constexpr					scope() = default;
+	inline constexpr scope()					= default;
 	inline virtual constexpr ~scope() = default;
 
 private:
@@ -60,7 +60,7 @@ public:
 	std::vector<port> ports;
 
 public:
-	inline constexpr					module() = default;
+	inline constexpr module() = default;
 	inline explicit constexpr module(const std::string_view name) noexcept : name(name) {}
 	inline virtual constexpr ~module() override = default;
 
@@ -71,11 +71,11 @@ private:
 class task : public scope {};
 
 struct timestamp {
-	using value_t = std::string;
-	using change	= std::pair<identifier_t, value_t>;
+	using value_t	 = std::string;
+	using change_t = std::pair<identifier_t, value_t>;
 
-	time_t							time;
-	std::vector<change> changes;
+	time_t								time;
+	std::vector<change_t> changes;
 };
 
 struct version {};
@@ -95,9 +95,17 @@ struct value_changes {
 	std::vector<timestamp> timestamps;
 };
 
+/// @brief initial value of ports
+struct dumpvars {
+	using change_t = std::pair<identifier_t, std::string>;
+	std::vector<change_t> changes;
+};
+
+
 /// @brief Represents a Value Change Dump (VCD) file
 struct value_change_dump {
 	header				header;
+	dumpvars			dumpvars;
 	value_changes value_changes;
 };
 } // namespace net::ancillarycat::waver
