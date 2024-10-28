@@ -20,8 +20,10 @@ int main(const int argc, const char *const *const argv) {
 		source_file = argv[1];
 		output_file = argv[2];
 	}
-	auto j = nlohmann::json{net::ancillarycat::waver::value_change_dump::parse(source_file)
-														.value_or(net::ancillarycat::waver::value_change_dump{})};
+	auto res = net::ancillarycat::waver::value_change_dump::parse(source_file)
+							 .value_or(net::ancillarycat::waver::value_change_dump{});
+	auto j = nlohmann::json{};
+	j			 = res;
 	std::println("{}", j.dump(2));
 	return 0;
 }

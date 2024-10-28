@@ -1,31 +1,17 @@
 #pragma once
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
+#include <utility>
 
 #include "config.hpp"
 #include "vcd_fwd.hpp"
 
 namespace net::ancillarycat::waver {
-class vcd_meta_element {
+class port {
 	friend class value_change_dump;
-
-public:
 	using json_t				= nlohmann::json;
 	using string_t			= std::string;
 	using string_view_t = std::string_view;
-
-public:
-	inline constexpr					vcd_meta_element()														 = default;
-	inline constexpr					vcd_meta_element(const vcd_meta_element &)		 = default;
-	inline constexpr					vcd_meta_element(vcd_meta_element &&) noexcept = default;
-	inline constexpr virtual ~vcd_meta_element() noexcept										 = default;
-
-private:
-	// friend void to_json(json_t &) = 0;
-};
-
-class port : public vcd_meta_element {
-	friend class value_change_dump;
 
 public:
 	enum type : std::uint8_t {
@@ -46,7 +32,7 @@ public:
 	inline constexpr port(port &&rhs) noexcept :
 			type(rhs.type), width(rhs.width), identifier(std::move(rhs.identifier)), name(std::move(rhs.name)),
 			reference(std::move(rhs.reference)) {}
-	inline constexpr virtual ~port() noexcept override = default;
+	inline constexpr virtual ~port() noexcept = default;
 
 
 	friend void to_json(json_t &j, const port &port);
@@ -71,101 +57,117 @@ inline void to_json(port::json_t &j, const port &port) {
 	// clang-format on
 }
 
-class scope : public vcd_meta_element {
-	friend class value_change_dump;
+class scope_value_base {
+public:
+	inline explicit constexpr scope_value_base() = default;
+	virtual inline constexpr ~scope_value_base() = default;
+	inline constexpr					scope_value_base(const scope_value_base &) {} // NOLINT(*-use-equals-default)
+	inline constexpr					scope_value_base(scope_value_base &&) noexcept {}
 
 public:
-	using scopes_t = std::vector<std::shared_ptr<scope>>;
-
-public:
-	inline constexpr					scope()					 = default;
-	inline virtual constexpr ~scope() override = default;
-
-public:
-	inline json_t to_json() const { return to_json_impl(); }
-
-private:
-	friend inline void to_json(json_t &j, const scope &scope) { j = scope.to_json(); }
-
-private:
-	inline virtual json_t to_json_impl() const = 0;
-
-protected:
-	scopes_t subscopes;
+	using json_t				= nlohmann::json;
+	using string_t			= std::string;
+	using string_view_t = std::string_view;
+	// inline constexpr scope_value_base &operator=(const scope_value_base &other) {}
+	// inline constexpr scope_value_base &operator=(scope_value_base &&other) noexcept {}
 };
-class module : public scope {
+class module : public scope_value_base {
 	friend class value_change_dump;
+	friend class scope;
 
 public:
 	using ports_t = std::vector<port>;
 
 public:
+	inline explicit constexpr module() : scope_value_base() {}
+	inline constexpr					module(const module &rhs) noexcept : scope_value_base(), ports(rhs.ports) {}
+	inline constexpr					module(module &&rhs) noexcept : scope_value_base(), ports(std::move(rhs.ports)) {}
+	inline virtual constexpr ~module() noexcept override{}; // NOLINT(*-use-equals-default)
+
+private:
 	ports_t ports;
+};
+
+class task : public scope_value_base {
+	friend class value_change_dump;
+	friend class scope;
 
 public:
-	inline constexpr					module() = default;
-	inline explicit constexpr module(const string_view_t name) noexcept : scope(), name(name) {}
-	inline virtual constexpr ~module() override = default;
-
-private:
-	// fixme: implement to_json
-	friend void to_json(json_t &j, const module &module) {
-		auto ports_json = json_t{};
-		std::ranges::for_each(module.ports, [&](auto &&port) { to_json(ports_json, port); });
-		j[module.name] = ports_json;
-	}
-
-	virtual inline  json_t to_json_impl() const override {
-		auto ports_json = json_t{};
-		std::ranges::for_each(ports, [&](const port &port) { net::ancillarycat::waver::to_json(ports_json, port); });
-		return json_t{{name, {ports_json}}};
-	}
-
-private:
-	string_t name; // dont use string_view here! name will be `\0ame`, dunno why
+	inline explicit constexpr task() : scope_value_base() {}
+	inline constexpr					task(const task &rhs) noexcept : scope_value_base() {}
+	inline constexpr					task(task &&rhs) noexcept : scope_value_base() {}
+	inline virtual constexpr ~task() noexcept override{}; // NOLINT(*-use-equals-default)
+	// todo: implement task
 };
-class task : public scope {
+
+class scope {
 	friend class value_change_dump;
 
 public:
-	inline constexpr					task()					= default;
-	inline virtual constexpr ~task() override = default;
+	using json_t				= nlohmann::json;
+	using string_t			= std::string;
+	using string_view_t = std::string_view;
+	using scopes_t			= std::vector<std::shared_ptr<scope>>;
+	using data_ptr_t		= std::shared_ptr<scope_value_base>;
+	using module_t			= module;
+	using task_t				= task;
+
+public:
+	inline explicit constexpr scope() = default;
+	inline 				scope(const scope &rhs) noexcept : // NOLINT(*-use-equals-default)
+			name(rhs.name), subscopes(rhs.subscopes), data(rhs.data) {}
+
+	inline constexpr scope &operator=(const scope &other) noexcept {
+		if (this == &other)
+			return *this;
+		name			= other.name;
+		subscopes = other.subscopes;
+		data			= other.data;
+		return *this;
+	}
+
+	inline scope(scope &&rhs) noexcept :
+			name(std::move(rhs.name)), subscopes(std::move(rhs.subscopes)), data(std::move(rhs.data)) {}
+	inline constexpr scope &operator=(scope &&other) noexcept {
+		if (this == &other)
+			return *this;
+		name			= std::move(other.name);
+		subscopes = std::move(other.subscopes);
+		data			= std::move(other.data);
+		return *this;
+	}
+	inline constexpr ~scope() noexcept = default;
 
 private:
-	// todo: implement task
-	friend void to_json(json_t &j, const task &task) { j["task"] = task.name; }
-	virtual inline json_t to_json_impl() const override { return json_t{{"task", {name}}}; }
-private:
-	// todo, implement task
-	string_t name;
+	string_t	 name;
+	scopes_t	 subscopes;
+	data_ptr_t data;
 };
 
-class timestamp : public vcd_meta_element {
+class timestamp {
 	friend class value_change_dump;
 
 public:
 	using changes_t = std::vector<change_t>;
 	using time_t		= size_t;
+	using json_t		= nlohmann::json;
+
 
 public:
 	inline explicit constexpr timestamp() = default;
 	inline constexpr timestamp(const time_t time, changes_t changes) noexcept : time(time), changes(std::move(changes)) {}
-	inline constexpr timestamp(const timestamp &rhs) : time(rhs.time), changes(rhs.changes) {}
+	inline constexpr timestamp(const timestamp &rhs) = default;
 	inline constexpr timestamp(timestamp &&rhs) noexcept {
 		time		= rhs.time;
 		changes = std::move(rhs.changes);
 	}
-	inline constexpr timestamp &operator=(const timestamp &rhs) {
-		time		= rhs.time;
-		changes = rhs.changes;
-		return *this;
-	}
+	inline constexpr timestamp &operator=(const timestamp &rhs) = default;
 	inline constexpr timestamp &operator=(timestamp &&rhs) noexcept {
 		time		= rhs.time;
 		changes = std::move(rhs.changes);
 		return *this;
 	}
-	inline constexpr virtual ~timestamp() noexcept override = default;
+	inline constexpr virtual ~timestamp() noexcept = default;
 
 private:
 	time_t		time = 0;
@@ -185,23 +187,22 @@ private:
 	}
 };
 
-class version : public vcd_meta_element {
+class version {
 	friend class value_change_dump;
+	using json_t	 = nlohmann::json;
+	using string_t = std::string;
 
 public:
-	inline constexpr explicit version() = default;
-	inline constexpr					version(const version &rhs) : description(rhs.description) {}
+	inline constexpr explicit version()										= default;
+	inline constexpr					version(const version &rhs) = default;
 	inline constexpr					version(version &&rhs) noexcept { description = std::move(rhs.description); }
-	inline constexpr version &operator=(const version &rhs) {
-		description = rhs.description;
-		return *this;
-	}
+	inline constexpr version &operator=(const version &rhs) = default;
 	inline constexpr version &operator=(version &&rhs) noexcept {
 		description = std::move(rhs.description);
 		return *this;
 	}
 
-	inline virtual constexpr ~version() override = default;
+	inline virtual constexpr ~version() = default;
 
 private:
 	friend void to_json(json_t &j, const version &version) { j["version"] = version.description; }
@@ -209,21 +210,21 @@ private:
 private:
 	string_t description;
 };
-class date : public vcd_meta_element {
+
+class date {
 	friend class value_change_dump;
+	using json_t	 = nlohmann::json;
+	using string_t = std::string;
 
 public:
-	inline explicit constexpr date()					= default;
-	inline virtual constexpr ~date() override = default;
-	inline constexpr					date(const date &rhs) : time_point(rhs.time_point) {}
+	inline explicit constexpr date()								= default;
+	inline virtual constexpr ~date()								= default;
+	inline constexpr					date(const date &rhs) = default;
 	inline constexpr					date(date &&rhs) noexcept { time_point = std::move(rhs.time_point); }
-	inline constexpr date		 &operator=(const date &rhs) {
-		 time_point = rhs.time_point;
+	inline constexpr date		 &operator=(const date &rhs) = default;
+	inline constexpr date		 &operator=(date &&rhs) noexcept {
+		 time_point = std::move(rhs.time_point);
 		 return *this;
-	}
-	inline constexpr date &operator=(date &&rhs) noexcept {
-		time_point = std::move(rhs.time_point);
-		return *this;
 	}
 
 private:
@@ -233,21 +234,20 @@ private:
 	// todo, implement date
 	string_t time_point;
 };
-class timescale : public vcd_meta_element {
+class timescale {
 	friend class value_change_dump;
+	using json_t	 = nlohmann::json;
+	using string_t = std::string;
 
 public:
 	using time_t = string_t;
 
 public:
-	inline explicit constexpr		timescale()					 = default;
-	inline virtual constexpr ~	timescale() override = default;
-	inline constexpr						timescale(const timescale &rhs) : time(rhs.time) {}
+	inline explicit constexpr		timescale()											= default;
+	inline virtual constexpr ~	timescale()											= default;
+	inline constexpr						timescale(const timescale &rhs) = default;
 	inline constexpr						timescale(timescale &&rhs) noexcept { time = std::move(rhs.time); }
-	inline constexpr timescale &operator=(const timescale &rhs) {
-		time = rhs.time;
-		return *this;
-	}
+	inline constexpr timescale &operator=(const timescale &rhs) = default;
 	inline constexpr timescale &operator=(timescale &&rhs) noexcept {
 		time = std::move(rhs.time);
 		return *this;
@@ -262,42 +262,37 @@ private:
 
 /// @brief Represents the header part of a VCD file, which contains the module
 /// definitions, timescale, and date
-class header : public vcd_meta_element {
+class header {
 	friend class value_change_dump;
+	using json_t	 = nlohmann::json;
+	using string_t = std::string;
 
 public:
 	using scopes_t = std::vector<std::shared_ptr<scope>>;
 
 public:
-	inline explicit constexpr header() = default;
-	inline constexpr					header(const header &rhs) :
-			scopes(rhs.scopes), version(rhs.version), date(rhs.date), timescale(rhs.timescale) {}
-	inline constexpr header(header &&rhs) noexcept {
-		scopes		= std::move(rhs.scopes);
-		version		= rhs.version;
-		date			= rhs.date;
-		timescale = rhs.timescale;
+	inline explicit constexpr header()							 = default;
+	inline constexpr					header(const header &) = default;
+	inline 	header(header &&rhs) noexcept {
+		 scopes		 = std::move(rhs.scopes);
+		 version	 = rhs.version;
+		 date			 = rhs.date;
+		 timescale = rhs.timescale;
 	}
-	inline constexpr header &operator=(const header &rhs) {
-		scopes		= rhs.scopes;
-		version		= rhs.version;
-		date			= rhs.date;
-		timescale = rhs.timescale;
-		return *this;
-	}
-	inline constexpr header &operator=(header &&rhs) noexcept {
+	inline constexpr header &operator=(const header &) = default;
+	inline header &operator=(header &&rhs) noexcept {
 		scopes		= std::move(rhs.scopes);
 		version		= rhs.version;
 		date			= rhs.date;
 		timescale = rhs.timescale;
 		return *this;
 	}
-	inline constexpr virtual ~header() noexcept override = default;
+	inline constexpr virtual ~header() noexcept = default;
 
 private:
 	friend void to_json(json_t &j, const header &header) {
 		auto scopes_json = json_t{};
-		std::ranges::for_each(header.scopes, [&](auto &&scope) { to_json(scopes_json, *scope); });
+		// std::ranges::for_each(header.scopes, [&](auto &&scope) { to_json(scopes_json, *scope); });
 		j["scopes"] = scopes_json;
 		to_json(j, header.version);
 		to_json(j, header.date);
@@ -311,25 +306,24 @@ private:
 	timescale timescale;
 };
 /// @brief Represents the value change part of a VCD file
-class value_changes : public vcd_meta_element {
+class value_changes {
 	friend class value_change_dump;
 
 public:
 	using timestamps_t = std::vector<timestamp>;
+	using json_t			 = nlohmann::json;
+	using string_t		 = std::string;
 
 public:
-	inline explicit constexpr value_changes() = default;
-	inline constexpr					value_changes(const value_changes &rhs) : timestamps(rhs.timestamps) {}
+	inline explicit constexpr value_changes()											 = default;
+	inline constexpr					value_changes(const value_changes &) = default;
 	inline constexpr					value_changes(value_changes &&rhs) noexcept { timestamps = std::move(rhs.timestamps); }
-	inline constexpr value_changes &operator=(const value_changes &rhs) {
-		timestamps = rhs.timestamps;
-		return *this;
-	}
+	inline constexpr value_changes &operator=(const value_changes &) = default;
 	inline constexpr value_changes &operator=(value_changes &&rhs) noexcept {
 		timestamps = std::move(rhs.timestamps);
 		return *this;
 	}
-	inline constexpr virtual ~value_changes() noexcept override = default;
+	inline constexpr virtual ~value_changes() noexcept = default;
 
 private:
 	friend void to_json(json_t &j, const value_changes &value_changes) {
@@ -343,28 +337,27 @@ private:
 };
 
 /// @brief initial value of ports
-class dumpvars : public vcd_meta_element {
+class dumpvars {
 	friend value_change_dump;
 
 public:
 	using changes_t = std::vector<change_t>;
+	using json_t		= nlohmann::json;
+	using string_t	= std::string;
 
 private:
 	changes_t changes;
 
 public:
-	inline explicit constexpr dumpvars() = default;
-	inline constexpr					dumpvars(const dumpvars &rhs) : changes(rhs.changes) {}
-	inline constexpr					dumpvars(dumpvars &&rhs) noexcept { changes = std::move(rhs.changes); }
-	inline constexpr auto			operator=(const dumpvars &rhs) -> dumpvars		 &{
-		changes = rhs.changes;
-		return *this;
+	inline explicit constexpr	 dumpvars()									= default;
+	inline constexpr					 dumpvars(const dumpvars &) = default;
+	inline constexpr					 dumpvars(dumpvars &&rhs) noexcept { changes = std::move(rhs.changes); }
+	inline constexpr dumpvars &operator=(const dumpvars &) = default;
+	inline constexpr auto			 operator=(dumpvars &&rhs) noexcept -> dumpvars			 &{
+		 changes = std::move(rhs.changes);
+		 return *this;
 	}
-	inline constexpr auto operator=(dumpvars &&rhs) noexcept -> dumpvars & {
-		changes = std::move(rhs.changes);
-		return *this;
-	}
-	inline constexpr virtual ~dumpvars() noexcept override = default;
+	inline constexpr virtual ~dumpvars() noexcept = default;
 
 private:
 	friend void to_json(json_t &j, const dumpvars &dumpvars) {

@@ -39,5 +39,7 @@ int main() {
 	// Print the JSON
 	std::cout << j.dump(4) << std::endl;
 
+	std::println(nlohmann::json::meta().dump(2));
+
 	return 0;
 }

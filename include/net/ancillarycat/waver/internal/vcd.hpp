@@ -65,6 +65,10 @@ class value_change_dump {
 		using string_view_t		= std::string_view;
 		using size_type				= std::string::size_type;
 		using lexer_t					= lexer</* default template arguments */>;
+		template <typename Data>
+		using optional_t = std::optional<Data>;
+		template <typename Data>
+		using expected_t = std::expected<Data, parse_error_t>;
 
 	public:
 		WAVER_NODISCARD inline constexpr reference			 get() noexcept { return vcd; }
@@ -78,17 +82,17 @@ class value_change_dump {
 		Status parse();
 
 	private:
-		parse_error_t parse_value_changes();
-		parse_error_t parse_header();
-		parse_error_t parse_version();
-		parse_error_t parse_comments();
-		parse_error_t parse_timescale();
-		parse_error_t parse_scope_fwd(scope *);
-		parse_error_t parse_module(scope *);
-		parse_error_t parse_variable(module *);
-		parse_error_t parse_body();
-		parse_error_t parse_dumpvars();
-		auto					parse_change() -> std::expected<change_t, parse_error_t>;
+		parse_error_t				 parse_value_changes();
+		parse_error_t				 parse_header();
+		parse_error_t				 parse_version();
+		parse_error_t				 parse_comments();
+		parse_error_t				 parse_timescale();
+		parse_error_t				 parse_scope_fwd(scope *);
+		parse_error_t				 parse_body();
+		parse_error_t				 parse_dumpvars();
+		parse_error_t				 parse_module(scope *);
+		parse_error_t				 parse_variable(const scope *);
+		expected_t<change_t> parse_change();
 
 	private:
 		value_type			&vcd;
@@ -99,7 +103,7 @@ class value_change_dump {
 public:
 	using json_t				= nlohmann::json;
 	using parser_t			= net::ancillarycat::waver::value_change_dump::parser;
-	using lexer_t				= net::ancillarycat::waver::lexer;
+	using lexer_t				= net::ancillarycat::waver::lexer</* default templat arguments */>;
 	using path_t				= std::filesystem::path;
 	using string_t			= std::string;
 	using string_view_t = std::string_view;
@@ -109,9 +113,9 @@ public:
 	inline explicit constexpr value_change_dump() = default;
 
 	inline constexpr value_change_dump(const value_change_dump &);
-	inline constexpr value_change_dump(value_change_dump &&) noexcept;
+	inline					 value_change_dump(value_change_dump &&) noexcept;
 
-	inline constexpr value_change_dump &operator=(value_change_dump &&) noexcept;
+	inline value_change_dump					 &operator=(value_change_dump &&) noexcept;
 	inline constexpr value_change_dump &operator=(const value_change_dump &);
 
 	inline constexpr ~value_change_dump() noexcept = default;
@@ -130,9 +134,9 @@ public:
 		return {vcd};
 	}
 	friend void to_json(json_t &j, const value_change_dump &vcd) {
-		to_json(j, vcd.header);
-		to_json(j, vcd.dumpvars);
-		to_json(j, vcd.value_changes);
+		// to_json(j, vcd.header);
+		// to_json(j, vcd.dumpvars);
+		// to_json(j, vcd.value_changes);
 	}
 
 public:
@@ -150,12 +154,12 @@ constexpr value_change_dump::value_change_dump(const value_change_dump &rhs) {
 	dumpvars			= rhs.dumpvars;
 	value_changes = rhs.value_changes;
 }
-constexpr value_change_dump::value_change_dump(value_change_dump &&rhs) noexcept {
+value_change_dump::value_change_dump(value_change_dump &&rhs) noexcept {
 	header				= std::move(rhs.header);
 	dumpvars			= std::move(rhs.dumpvars);
 	value_changes = std::move(rhs.value_changes);
 }
-constexpr value_change_dump &value_change_dump::operator=(value_change_dump &&rhs) noexcept {
+value_change_dump &value_change_dump::operator=(value_change_dump &&rhs) noexcept {
 	header				= std::move(rhs.header);
 	dumpvars			= std::move(rhs.dumpvars);
 	value_changes = std::move(rhs.value_changes);
@@ -328,13 +332,13 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 
 	// currently do nothing but consume the token
 	token = lexer.consume();
-	while (token != lexer.back())
+	while (token != lexer.back()) {
 		if (token == keywords::$end)
 			return parse_error_t::kSuccess; // cursor has passed the `$end`, i.e.,
 																			// now the cursor is the one after the
 																			// `$end`
-		else
-			token = lexer.consume();
+		token = lexer.consume();
+	}
 	return parse_error_t::kUnexpectedEndOfFile;
 }
 inline value_change_dump::parser::parse_error_t
@@ -342,19 +346,34 @@ value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-re
 	boost::contract::check c =
 		boost::contract::function().precondition([&] { return lexer.current() == keywords::$scope; });
 
+	auto current_scope = std::make_shared<scope>();
+	if (parent == nullptr) {
+		current_scope = vcd.header.scopes.emplace_back(new scope{});
+	}
+
 	lexer.consume(); // consume $scope
 
 	// currently do nothing but consume the token
 	token = lexer.current();
 	while (token != lexer.back()) {
 		if (token == keywords::$upscope) {
-			if (token = lexer.consume(); token == keywords::$end)
-				return parse_error_t::kSuccess;
-			return parse_error_t::kUnknownKeyword;
+			lexer.consume();
+			token = lexer.consume();
+			if (token = lexer.consume(); token != keywords::$end)
+				return parse_error_t::kUnknownKeyword;
+			if (parent != nullptr)
+				parent->subscopes.emplace_back(std::move(current_scope));
+			else
+				vcd.header.scopes.emplace_back(std::move(current_scope));
+			return parse_error_t::kSuccess;
 		}
 		if (token == keywords::module) {
-			if (auto res = parse_module(parent); res != parse_error_t::kSuccess)
+			if (auto res = parse_module(current_scope.get()); res != parse_error_t::kSuccess)
 				return res;
+			if (parent != nullptr)
+				parent->subscopes.emplace_back(std::move(current_scope));
+			// else // already added in the upper lines
+			// 	vcd.header.scopes.emplace_back(std::move(current_scope));
 			return parse_error_t::kSuccess;
 		}
 	}
@@ -362,16 +381,16 @@ value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-re
 	return parse_error_t::kUnexpectedEndOfFile;
 }
 inline value_change_dump::parser::parse_error_t
-value_change_dump::parser::parse_module(scope *parent) { // NOLINT(misc-no-recursion)
+value_change_dump::parser::parse_module(scope *current_scope) { // NOLINT(misc-no-recursion)
 	boost::contract::check c =
 		boost::contract::function().precondition([&] { return lexer.current() == keywords::module; });
 
 	lexer.consume(); // consume `module` keyword
-	token								= lexer.consume(); // module name
-	auto current_module = std::make_shared<module>();
+	token = lexer.consume(); // module name
+	// auto current_module = std::make_shared<module>();
 
-	if (token != empty_sv)
-		current_module->name = {token.begin(), token.end()};
+	if (token != lexer.back())
+		current_scope->name = {token.begin(), token.end()};
 	else
 		return parse_error_t::kUnexpectedEndOfFile;
 
@@ -382,32 +401,27 @@ value_change_dump::parser::parse_module(scope *parent) { // NOLINT(misc-no-recur
 	if (token != keywords::$end)
 		return parse_error_t::kInvalidScope;
 
+	current_scope->data = std::make_shared<module>();
+
 	for (token = lexer.current(); token != keywords::$upscope; token = lexer.current()) {
 		if (token == keywords::$var) {
-			if (auto res = parse_variable(current_module.get()); res != parse_error_t::kSuccess)
+			if (auto res = parse_variable(current_scope); res != parse_error_t::kSuccess)
 				return res;
 		}
 		if (token == keywords::$scope) {
-			if (auto res = parse_scope_fwd(current_module.get()); res != parse_error_t::kSuccess)
+			if (auto res = parse_scope_fwd(current_scope); res != parse_error_t::kSuccess)
 				return res;
 		}
 	}
-	// token = `$upscope`
 	lexer.consume();
-	token = lexer.consume();
-	if (token != keywords::$end)
+	if (token = lexer.consume(); token != keywords::$end)
 		return parse_error_t::kInvalidScope;
-
-	if (parent)
-		parent->subscopes.emplace_back(std::move(current_module));
-	else // if no parent, then it's the top module
-		vcd.header.scopes.emplace_back(std::move(current_module));
 
 	return parse_error_t::kSuccess;
 }
-inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_variable(module *current_module) {
-	boost::contract::check c =
-		boost::contract::function().precondition([&] { return lexer.current() == keywords::$var; });
+inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_variable(const scope *current_scope) {
+	boost::contract::check c = boost::contract::function().precondition(
+		[&] { return lexer.current() == keywords::$var && std::dynamic_pointer_cast<module>(current_scope->data); });
 
 	lexer.consume(); // consume $var
 
@@ -438,7 +452,8 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 	for (; token != keywords::$end; token = lexer.consume()) {
 		reference += token;
 	}
-	current_module->ports.emplace_back(signal_type, signal_width, identifier, name, reference);
+	static_cast<module *>(current_scope->data.get()) // NOLINT(*-pro-type-static-cast-downcast)
+		->ports.emplace_back(signal_type, signal_width, identifier, name, reference);
 	return parse_error_t::kSuccess; /// token should be the one after `$end`
 }
 
@@ -456,13 +471,14 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 				return res;
 			else
 				(void)res;
-		} else if (token == keywords::$dumpall) {
-			// parse dumpall
-		} else if (token == keywords::$dumpon) {
-			// parse dumpon
-		} else if (token == keywords::$dumpoff) {
-			// parse dumpoff
 		}
+		// else if (token == keywords::$dumpall) {
+		// 	// parse dumpall
+		// } else if (token == keywords::$dumpon) {
+		// 	// parse dumpon
+		// } else if (token == keywords::$dumpoff) {
+		// 	// parse dumpoff
+		// }
 	}
 
 	return parse_error_t::kSuccess;

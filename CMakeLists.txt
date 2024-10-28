@@ -4,21 +4,15 @@ project(waver LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
-# execute_process(
-# 	COMMAND dev
-# 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-# )
-
 # "-DCMAKE_TOOLCHAIN_FILE=M:/vcpkg/scripts/buildsystems/vcpkg.cmake"
 # set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
-# add fmt, nlohmann/json, and gtest
-find_package(fmt CONFIG REQUIRED)
+#find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
+find_package(boost 1.85.0 CONFIG REQUIRED COMPONENTS contracts)
 
 # find_package(GTest CONFIG REQUIRED)
-find_package(absl CONFIG REQUIRED)
-find_package(boost COMPONENTS contracts CONFIG REQUIRED)
 add_executable(waver
         main.cpp
         include/net/ancillarycat/waver/waver.hpp
@@ -33,14 +27,14 @@ add_executable(test test.cpp
 
 target_link_libraries(test
         PRIVATE
-        fmt::fmt
+#        fmt::fmt
         nlohmann_json::nlohmann_json
         absl::base
 )
 
 target_link_libraries(waver
         PRIVATE
-        fmt::fmt
+#        fmt::fmt
         nlohmann_json::nlohmann_json
         absl::base
         # GTest::gtest
