@@ -127,8 +127,9 @@ public:
 	WAVER_NODISCARD inline boolean_t is_empty() const noexcept { return token_views.empty(); }
 
 	///	@brief consume the current token
-	///	@param step the number of tokens to skip
+	///	@param [in] step the number of tokens to skip
 	///	@return the current token
+	/// @todo I admit this is a poor api design, but I've already used it in the parser, so I'm keeping it now.
 	///	@note get the next token and ADVANCE the cursor;
 	///				consume() will ALWAYS return the current token, no matter how big the step is;
 	///				the step is the short hand for discarding the current token;
@@ -142,8 +143,7 @@ public:
 	}
 	inline lexer &print_tokens() {
 		for (auto &&token : token_views)
-			std::println("token: {}",
-									 token); // cannot use `token.data()` since string_view_t
+			std::println("token: {}", token); // cannot use `token.data()` since string_view_t
 		// is not null-terminated
 		return *this;
 	}

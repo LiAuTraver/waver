@@ -6,11 +6,16 @@ set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 # "-DCMAKE_TOOLCHAIN_FILE=M:/vcpkg/scripts/buildsystems/vcpkg.cmake"
 # set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
-
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 #find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
-find_package(boost 1.85.0 CONFIG REQUIRED COMPONENTS contracts)
+find_package(boost 1.85.0 CONFIG REQUIRED COMPONENTS
+        contracts
+        assert
+)
 
 # find_package(GTest CONFIG REQUIRED)
 add_executable(waver
@@ -24,7 +29,7 @@ add_executable(waver
 )
 add_executable(test test.cpp
         include/net/ancillarycat/waver/internal/meta_elements.hpp)
-
+include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(test
         PRIVATE
 #        fmt::fmt
@@ -37,6 +42,8 @@ target_link_libraries(waver
 #        fmt::fmt
         nlohmann_json::nlohmann_json
         absl::base
+        ${BOOST_LIBRARIES}
+        Boost::boost
         # GTest::gtest
         # GTest::gtest_main
 )

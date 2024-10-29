@@ -29,7 +29,7 @@
 #include <vector>
 #include "config.hpp"
 #include "lexer.hpp"
-#include "vcd.hpp"
+#include "meta_elements.hpp"
 #include "vcd_fwd.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -39,9 +39,6 @@ namespace net::ancillarycat::waver {
 /// @brief Represents a Value Change Dump (VCD) file
 class value_change_dump {
 	class parser {
-		friend class scope;
-		friend class module;
-
 	public:
 		inline constexpr explicit parser(value_change_dump &vcd) noexcept : vcd(vcd) {}
 
@@ -95,9 +92,9 @@ class value_change_dump {
 		expected_t<change_t> parse_change();
 
 	private:
-		value_type			&vcd;
-		lexer_t					 lexer;
-		std::string_view token;
+		value_type	 &vcd;
+		lexer_t				lexer;
+		string_view_t token;
 	};
 
 public:
@@ -121,7 +118,10 @@ public:
 	inline constexpr ~value_change_dump() noexcept = default;
 
 public:
-	inline static expected_t parse(auto &&source)
+	WAVER_NODISCARD inline constexpr json_t as_json(this auto &&self) noexcept { return self; }
+
+public:
+	WAVER_NODISCARD inline static expected_t parse(auto &&source)
 		requires std::same_as<std::remove_cvref_t<decltype(source)>, path_t> or
 						 std::same_as<std::remove_cvref_t<decltype(source)>, string_t>
 	{
@@ -133,10 +133,16 @@ public:
 			return {res};
 		return {vcd};
 	}
+
+public:
 	friend void to_json(json_t &j, const value_change_dump &vcd) {
-		// to_json(j, vcd.header);
-		// to_json(j, vcd.dumpvars);
-		// to_json(j, vcd.value_changes);
+		to_json(j, vcd.header);
+		to_json(j, vcd.dumpvars);
+		to_json(j, vcd.value_changes);
+		// auto value_changes_json = nlohmann::json::array();
+		// to_json(value_changes_json, vcd.value_changes);
+		// j["value_changes"] = value_changes_json;
+		// j.emplace_back(json_t{WAVER_TO_STRING(value_changes),{value_changes_json}});
 	}
 
 public:
@@ -149,23 +155,23 @@ public:
 ///				 Implementation
 //////////////////////////////////////////////////////////////////////////////
 namespace net::ancillarycat::waver {
-constexpr value_change_dump::value_change_dump(const value_change_dump &rhs) {
+inline constexpr value_change_dump::value_change_dump(const value_change_dump &rhs) {
 	header				= rhs.header;
 	dumpvars			= rhs.dumpvars;
 	value_changes = rhs.value_changes;
 }
-value_change_dump::value_change_dump(value_change_dump &&rhs) noexcept {
+inline value_change_dump::value_change_dump(value_change_dump &&rhs) noexcept {
 	header				= std::move(rhs.header);
 	dumpvars			= std::move(rhs.dumpvars);
 	value_changes = std::move(rhs.value_changes);
 }
-value_change_dump &value_change_dump::operator=(value_change_dump &&rhs) noexcept {
+inline value_change_dump &value_change_dump::operator=(value_change_dump &&rhs) noexcept {
 	header				= std::move(rhs.header);
 	dumpvars			= std::move(rhs.dumpvars);
 	value_changes = std::move(rhs.value_changes);
 	return *this;
 }
-constexpr value_change_dump &value_change_dump::operator=(const value_change_dump &rhs) = default;
+inline constexpr value_change_dump &value_change_dump::operator=(const value_change_dump &rhs) = default;
 
 
 enum WAVER_NODISCARD value_change_dump::parser::parse_error : std::uint8_t {
@@ -227,6 +233,7 @@ inline auto value_change_dump::parser::parse_change()
 	ports_value_t value = {token.begin(), token.end()};
 	if (token = lexer.consume(); token == empty_sv)
 		return std::unexpected(parse_error_t::kUnexpectedEndOfFile);
+	token										= lexer.current();
 	identifier_t identifier = {token.begin(), token.end()};
 
 
@@ -245,7 +252,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 				auto maybe_change = parse_change();
 				if (not maybe_change)
 					return maybe_change.error();
-				timestamp.changes.emplace_back(std::move(*maybe_change));
+				timestamp.changes.insert(std::move(*maybe_change));
 
 				token = lexer.consume();
 			}
@@ -394,9 +401,6 @@ value_change_dump::parser::parse_module(scope *current_scope) { // NOLINT(misc-n
 	else
 		return parse_error_t::kUnexpectedEndOfFile;
 
-	// debug print
-	// std::println("module name: {}", current_module->to_string_view());
-
 	token = lexer.consume();
 	if (token != keywords::$end)
 		return parse_error_t::kInvalidScope;
@@ -420,8 +424,10 @@ value_change_dump::parser::parse_module(scope *current_scope) { // NOLINT(misc-n
 	return parse_error_t::kSuccess;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_variable(const scope *current_scope) {
-	boost::contract::check c = boost::contract::function().precondition(
-		[&] { return lexer.current() == keywords::$var && std::dynamic_pointer_cast<module>(current_scope->data); });
+	boost::contract::check c = boost::contract::function().precondition([&] {
+		return lexer.current() == keywords::$var &&
+					 current_scope->data->get_type() == scope_value_base::scope_type::kModule;
+	});
 
 	lexer.consume(); // consume $var
 
@@ -450,10 +456,10 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 	// bad implementation, need to be fixed
 	std::string reference;
 	for (; token != keywords::$end; token = lexer.consume()) {
-		reference += token;
+		// reference += token; // fixme
 	}
-	static_cast<module *>(current_scope->data.get()) // NOLINT(*-pro-type-static-cast-downcast)
-		->ports.emplace_back(signal_type, signal_width, identifier, name, reference);
+	std::dynamic_pointer_cast<module>(current_scope->data)
+		->ports.emplace_back(signal_type, signal_width, std::move(identifier), std::move(name), std::move(reference));
 	return parse_error_t::kSuccess; /// token should be the one after `$end`
 }
 

@@ -1,7 +1,8 @@
+#define WAVER_DEBUG_ENABLED 1
 #include <filesystem>
 #include <fstream>
 #include "include/net/ancillarycat/waver/waver.hpp"
-// #include <nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <print>
 
 int main(const int argc, const char *const *const argv) {
@@ -22,8 +23,8 @@ int main(const int argc, const char *const *const argv) {
 	}
 	auto res = net::ancillarycat::waver::value_change_dump::parse(source_file)
 							 .value_or(net::ancillarycat::waver::value_change_dump{});
-	auto j = nlohmann::json{};
-	j			 = res;
-	std::println("{}", j.dump(2));
+	auto j = res.as_json();
+	std::ofstream output(output_file);
+	output << j.dump(4);
 	return 0;
 }

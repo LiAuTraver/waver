@@ -30,12 +30,8 @@ __generated__
 
 ### react template
 .DS_*
-*.log
-logs
 **/*.backup.*
 **/*.back.*
-
-node_modules
 bower_components
 
 *.sublime*
@@ -49,3 +45,5 @@ build
 *-build-*
 
 **/.cache/**
+
+test.cpp

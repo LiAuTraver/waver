@@ -1,27 +1,36 @@
 #pragma once
+#include <boost/contract/check.hpp>
+#include <boost/contract/function.hpp>
+#include <cstdint>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
+#include <print>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
-
+#include <vector>
 #include "config.hpp"
+#include "internal/contract.hpp"
+#include "internal/variadic.h"
 #include "vcd_fwd.hpp"
+
 
 namespace net::ancillarycat::waver {
 class port {
 	friend class value_change_dump;
+	friend class module;
+	friend inline void to_json(json_t &j, const module &module);
+
+public:
 	using json_t				= nlohmann::json;
 	using string_t			= std::string;
 	using string_view_t = std::string_view;
+	using size_t				= std::size_t;
 
 public:
-	enum type : std::uint8_t {
-		kUnknown	= 0,
-		kInput		= 1,
-		kOutput		= 2,
-		kInout		= kInput | kOutput, // 3
-		kWire			= 4,
-		kRegistor = 8,
-	};
+	enum type : std::uint8_t;
 
 public:
 	inline explicit constexpr port(const type type, const size_t width, identifier_t identifier, std::string name,
@@ -35,7 +44,29 @@ public:
 	inline constexpr virtual ~port() noexcept = default;
 
 
-	friend void to_json(json_t &j, const port &port);
+	friend inline void to_json(port::json_t &j, const port &port) {
+		// clang-format off
+		j = port::json_t{{port.name, // <- key, value vvv
+			{
+					 {"type", port.type},
+					 {"width", port.width},
+					 {"identifier", port.identifier},
+					 {"reference", port.reference}
+			}
+		}};
+		// clang-format on
+		WAVER_RUNTIME_ASSERT(j.is_object());
+	}
+
+public:
+	enum type : std::uint8_t {
+		kUnknown	= 0,
+		kInput		= 1,
+		kOutput		= 2,
+		kInout		= kInput | kOutput, // 3
+		kWire			= 4,
+		kRegistor = 8,
+	};
 
 private:
 	type				 type = kUnknown;
@@ -44,33 +75,43 @@ private:
 	string_t		 name;
 	string_t		 reference; // [4:0], a[0], a[4:0]
 };
-inline void to_json(port::json_t &j, const port &port) {
-	// clang-format off
-	j = port::json_t{{port.name, // key
-		{
-				 {"type", port.type},
-				 {"width", port.width},
-				 {"identifier", port.identifier},
-				 {"reference", port.reference}
-		}
-	}};
-	// clang-format on
-}
 
+/*!
+ * 	@brief Represents the base class for all scope values
+ *
+ * 	@interface scope_value_base
+ *
+ * */
 class scope_value_base {
-public:
-	inline explicit constexpr scope_value_base() = default;
-	virtual inline constexpr ~scope_value_base() = default;
-	inline constexpr					scope_value_base(const scope_value_base &) {} // NOLINT(*-use-equals-default)
-	inline constexpr					scope_value_base(scope_value_base &&) noexcept {}
+	friend class value_change_dump;
+	friend class scope;
 
 public:
 	using json_t				= nlohmann::json;
 	using string_t			= std::string;
 	using string_view_t = std::string_view;
-	// inline constexpr scope_value_base &operator=(const scope_value_base &other) {}
-	// inline constexpr scope_value_base &operator=(scope_value_base &&other) noexcept {}
+	/// @brief Represents the type of the scope.
+	enum scope_type : std::uint8_t;
+
+public:
+	inline explicit constexpr							 scope_value_base() = default;
+	virtual inline constexpr ~						 scope_value_base() = default;
+	inline constexpr											 scope_value_base(const scope_value_base &) {} // NOLINT(*-use-equals-default)
+	inline constexpr											 scope_value_base(scope_value_base &&) noexcept {}
+	WAVER_FORCEINLINE constexpr scope_type get_type() const noexcept { return get_type_impl(); }
+
+private:
+	virtual inline constexpr scope_type get_type_impl() const noexcept = 0;
+
+public:
+	enum scope_type : std::uint8_t {
+		kUnknown = 0,
+		kModule	 = 1,
+		kTask		 = 2,
+	};
 };
+
+/// @brief Represents a module in a VCD file
 class module : public scope_value_base {
 	friend class value_change_dump;
 	friend class scope;
@@ -86,18 +127,42 @@ public:
 
 private:
 	ports_t ports;
-};
 
+private:
+	inline virtual constexpr scope_type get_type_impl() const noexcept override { return scope_type::kModule; }
+
+private:
+	friend inline void to_json(json_t &j, const module &module) {
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		std::ranges::for_each(module.ports, [&](auto &&port) {
+			auto port_json = json_t{};
+			to_json(port_json, port);
+			WAVER_RUNTIME_ASSERT(port_json.is_object());
+			WAVER_RUNTIME_ASSERT(port_json.front() == port_json.back());
+			j["ports"].merge_patch(port_json);
+		});
+	}
+};
 class task : public scope_value_base {
 	friend class value_change_dump;
 	friend class scope;
 
 public:
 	inline explicit constexpr task() : scope_value_base() {}
-	inline constexpr					task(const task &rhs) noexcept : scope_value_base() {}
-	inline constexpr					task(task &&rhs) noexcept : scope_value_base() {}
+	inline constexpr					task(const task &) noexcept : scope_value_base() {}
+	inline constexpr					task(task &&) noexcept : scope_value_base() {}
 	inline virtual constexpr ~task() noexcept override{}; // NOLINT(*-use-equals-default)
+private:
+	scope_type get_type_impl() const noexcept override { return scope_type::kTask; }
 	// todo: implement task
+
+private:
+	friend inline void to_json(json_t &j, const task &task) {
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		j.emplace_back("task");
+	}
 };
 
 class scope {
@@ -114,7 +179,7 @@ public:
 
 public:
 	inline explicit constexpr scope() = default;
-	inline 				scope(const scope &rhs) noexcept : // NOLINT(*-use-equals-default)
+	inline										scope(const scope &rhs) noexcept : // NOLINT(*-use-equals-default)
 			name(rhs.name), subscopes(rhs.subscopes), data(rhs.data) {}
 
 	inline constexpr scope &operator=(const scope &other) noexcept {
@@ -139,6 +204,39 @@ public:
 	inline constexpr ~scope() noexcept = default;
 
 private:
+	/// @remark because it holds a shared_ptr, the to_json dinstincts with others.
+	friend inline void to_json(json_t &j, const scope &scope) {
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		auto subscopes_json = json_t{};
+		std::ranges::for_each(scope.subscopes, [&](auto &&subscope) { to_json(subscopes_json, *subscope); });
+		auto data_json = json_t{};
+		switch (scope.data->get_type()) {
+		case scope_value_base::scope_type::kModule: {
+			j["type"]		= "module";
+			auto module = std::dynamic_pointer_cast<module_t>(scope.data);
+			to_json(data_json, *module);
+			break;
+		}
+		case scope_value_base::scope_type::kTask: {
+			j["type"] = "task";
+			auto task = std::dynamic_pointer_cast<task_t>(scope.data);
+			to_json(data_json, *task);
+			break;
+		}
+		default: {
+			j["type"] = "unknown";
+			break;
+		}
+		}
+		j["name"]			 = scope.name;
+		j["data"]			 = data_json; //! <- data json shall be an array
+		j["subscopes"] = subscopes_json;
+
+		WAVER_RUNTIME_ASSERT(j.is_object());
+	}
+
+private:
 	string_t	 name;
 	scopes_t	 subscopes;
 	data_ptr_t data;
@@ -148,21 +246,21 @@ class timestamp {
 	friend class value_change_dump;
 
 public:
-	using changes_t = std::vector<change_t>;
+	using changes_t = std::unordered_map<identifier_t, ports_value_t>;
 	using time_t		= size_t;
 	using json_t		= nlohmann::json;
 
 
 public:
 	inline explicit constexpr timestamp() = default;
-	inline constexpr timestamp(const time_t time, changes_t changes) noexcept : time(time), changes(std::move(changes)) {}
+	inline					 timestamp(const time_t time, changes_t changes) noexcept : time(time), changes(std::move(changes)) {}
 	inline constexpr timestamp(const timestamp &rhs) = default;
-	inline constexpr timestamp(timestamp &&rhs) noexcept {
+	inline					 timestamp(timestamp &&rhs) noexcept {
 		time		= rhs.time;
 		changes = std::move(rhs.changes);
 	}
 	inline constexpr timestamp &operator=(const timestamp &rhs) = default;
-	inline constexpr timestamp &operator=(timestamp &&rhs) noexcept {
+	inline timestamp					 &operator=(timestamp &&rhs) noexcept {
 		time		= rhs.time;
 		changes = std::move(rhs.changes);
 		return *this;
@@ -174,16 +272,11 @@ private:
 	changes_t changes;
 
 private:
-	// todo, implement timestamp
-	friend void to_json(json_t &j, const timestamp &timestamp) {
-		j["time"]					 = timestamp.time;
-		auto changes_array = json_t{};
-		std::ranges::for_each(timestamp.changes, [&](auto &&change) {
-			json_t change_json;
-			change_json[change.first] = change.second;
-			changes_array.emplace_back(change_json);
-		});
-		j["changes"] = changes_array;
+	/// @note strengthened
+	friend void WAVER_IS_JSON_OBJECT to_json(json_t &j, const timestamp &timestamp) {
+		j[std::to_string(timestamp.time)].merge_patch(timestamp.changes);
+
+		WAVER_RUNTIME_ASSERT(j.is_object());
 	}
 };
 
@@ -228,7 +321,12 @@ public:
 	}
 
 private:
-	friend void to_json(json_t &j, const date &date) { j["date"] = date.time_point; }
+	friend void to_json(json_t &j, const date &date) {
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		if (not date.time_point.empty())
+			j["date"] = date.time_point;
+	}
 
 private:
 	// todo, implement date
@@ -254,7 +352,10 @@ public:
 	}
 
 private:
-	friend void to_json(json_t &j, const timescale &timescale) { j["timescale"] = timescale.time; }
+	friend void to_json(json_t &j, const timescale &timescale) {
+		if (not timescale.time.empty())
+			j["timescale"] = timescale.time;
+	}
 
 private:
 	string_t time;
@@ -273,14 +374,14 @@ public:
 public:
 	inline explicit constexpr header()							 = default;
 	inline constexpr					header(const header &) = default;
-	inline 	header(header &&rhs) noexcept {
+	inline										header(header &&rhs) noexcept {
 		 scopes		 = std::move(rhs.scopes);
 		 version	 = rhs.version;
 		 date			 = rhs.date;
 		 timescale = rhs.timescale;
 	}
 	inline constexpr header &operator=(const header &) = default;
-	inline header &operator=(header &&rhs) noexcept {
+	inline header						&operator=(header &&rhs) noexcept {
 		scopes		= std::move(rhs.scopes);
 		version		= rhs.version;
 		date			= rhs.date;
@@ -292,7 +393,7 @@ public:
 private:
 	friend void to_json(json_t &j, const header &header) {
 		auto scopes_json = json_t{};
-		// std::ranges::for_each(header.scopes, [&](auto &&scope) { to_json(scopes_json, *scope); });
+		std::ranges::for_each(header.scopes, [&](auto &&scope) { to_json(scopes_json, *scope); });
 		j["scopes"] = scopes_json;
 		to_json(j, header.version);
 		to_json(j, header.date);
@@ -327,9 +428,15 @@ public:
 
 private:
 	friend void to_json(json_t &j, const value_changes &value_changes) {
-		auto timestamps_json = json_t{};
-		std::ranges::for_each(value_changes.timestamps, [&](auto &&timestamp) { to_json(timestamps_json, timestamp); });
-		j["timestamps"] = timestamps_json;
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		std::ranges::for_each(value_changes.timestamps, [&](auto &&timestamp) {
+			auto timestamp_json = json_t{};
+			to_json(timestamp_json, timestamp);
+			WAVER_RUNTIME_ASSERT(timestamp_json.is_object());
+			WAVER_RUNTIME_ASSERT(timestamp_json.front() == timestamp_json.back());
+			j[WAVER_TO_STRING(value_changes)].merge_patch(timestamp_json);
+		});
 	}
 
 private:
@@ -353,21 +460,17 @@ public:
 	inline constexpr					 dumpvars(const dumpvars &) = default;
 	inline constexpr					 dumpvars(dumpvars &&rhs) noexcept { changes = std::move(rhs.changes); }
 	inline constexpr dumpvars &operator=(const dumpvars &) = default;
-	inline constexpr auto			 operator=(dumpvars &&rhs) noexcept -> dumpvars			 &{
-		 changes = std::move(rhs.changes);
-		 return *this;
+	inline constexpr dumpvars &operator=(dumpvars &&rhs) noexcept {
+		changes = std::move(rhs.changes);
+		return *this;
 	}
 	inline constexpr virtual ~dumpvars() noexcept = default;
 
 private:
 	friend void to_json(json_t &j, const dumpvars &dumpvars) {
-		auto changes_json = json_t{};
-		std::ranges::for_each(dumpvars.changes, [&](auto &&change) {
-			json_t change_json;
-			change_json[change.first] = change.second;
-			changes_json.emplace_back(change_json);
-		});
-		j["dumpvars"] = changes_json;
+		boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+
+		j[WAVER_TO_STRING(dumpvars)].emplace_back(dumpvars.changes);
 	}
 };
 } // namespace net::ancillarycat::waver
