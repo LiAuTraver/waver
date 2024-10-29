@@ -273,7 +273,7 @@ private:
 
 private:
 	/// @note strengthened
-	friend void WAVER_IS_JSON_OBJECT to_json(json_t &j, const timestamp &timestamp) {
+	friend void to_json(json_t &j, const timestamp &timestamp) {
 		j[std::to_string(timestamp.time)].merge_patch(timestamp.changes);
 
 		WAVER_RUNTIME_ASSERT(j.is_object());

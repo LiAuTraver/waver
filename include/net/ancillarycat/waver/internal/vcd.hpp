@@ -76,20 +76,20 @@ class value_change_dump {
 		inline Status load(string_t &&content) noexcept { return lexer.load(std::forward<string_t>(content)); }
 
 	public:
-		Status parse();
+		inline Status parse();
 
 	private:
-		parse_error_t				 parse_value_changes();
-		parse_error_t				 parse_header();
-		parse_error_t				 parse_version();
-		parse_error_t				 parse_comments();
-		parse_error_t				 parse_timescale();
-		parse_error_t				 parse_scope_fwd(scope *);
-		parse_error_t				 parse_body();
-		parse_error_t				 parse_dumpvars();
-		parse_error_t				 parse_module(scope *);
-		parse_error_t				 parse_variable(const scope *);
-		expected_t<change_t> parse_change();
+		inline parse_error_t parse_value_changes();
+		inline parse_error_t parse_header();
+		inline parse_error_t parse_version();
+		inline parse_error_t parse_comments();
+		inline parse_error_t parse_timescale();
+		inline parse_error_t parse_scope_fwd(scope *);
+		inline parse_error_t parse_body();
+		inline parse_error_t parse_dumpvars();
+		inline parse_error_t parse_module(scope *);
+		inline parse_error_t parse_variable(const scope *);
+		inline expected_t<change_t> parse_change();
 
 	private:
 		value_type	 &vcd;

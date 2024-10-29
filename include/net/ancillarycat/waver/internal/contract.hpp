@@ -14,7 +14,7 @@
 #define WAVER_DEBUG_BREAK __builtin_trap();
 #define WAVER_FUNCTION_NAME __PRETTY_FUNCTION__
 #elifdef _MSC_VER
-#define WAVER_FORCEINLINE __forceinline
+#define WAVER_FORCEINLINE [[msvc::forceinline]]
 #define WAVER_DEBUG_BREAK __debugbreak();
 #define WAVER_FUNCTION_NAME __FUNCSIG__
 #else

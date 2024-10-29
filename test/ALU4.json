@@ -1,283 +1,283 @@
 {
-  "dumpvars": [
-    []
-  ],
-  "scopes": {
-    "data": {
-      "ports": {
-        "carry": {
-          "identifier": "/",
-          "reference": "",
-          "type": 4,
-          "width": 1
-        },
-        "lhs": {
-          "identifier": ")",
-          "reference": "",
-          "type": 4,
-          "width": 4
-        },
-        "op": {
-          "identifier": "+",
-          "reference": "",
-          "type": 4,
-          "width": 3
-        },
-        "out": {
-          "identifier": ",",
-          "reference": "",
-          "type": 4,
-          "width": 4
-        },
-        "overflow": {
-          "identifier": ".",
-          "reference": "",
-          "type": 4,
-          "width": 1
-        },
-        "rhs": {
-          "identifier": "*",
-          "reference": "",
-          "type": 4,
-          "width": 4
-        },
-        "zero": {
-          "identifier": "-",
-          "reference": "",
-          "type": 4,
-          "width": 1
-        }
-      }
-    },
-    "name": "TOP",
-    "subscopes": {
-      "data": {
-        "ports": {
-          "and_out": {
-            "identifier": "6",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "carry": {
-            "identifier": "/",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "cla4_out": {
-            "identifier": "1",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "is_eq": {
-            "identifier": "$",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "is_rhs_bigger": {
-            "identifier": "=",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "lhs": {
-            "identifier": ")",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "not_lhs_out": {
-            "identifier": "4",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "op": {
-            "identifier": "+",
-            "reference": "",
-            "type": 4,
-            "width": 3
-          },
-          "op_add": {
-            "identifier": "#",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_and": {
-            "identifier": "5",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_lhs_eq": {
-            "identifier": ";",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_lhs_less": {
-            "identifier": "<",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_not_lhs": {
-            "identifier": "3",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_or": {
-            "identifier": "7",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_sub": {
-            "identifier": "2",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "op_xor": {
-            "identifier": "9",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "or_out": {
-            "identifier": "8",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "out": {
-            "identifier": ",",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "overflow": {
-            "identifier": ".",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          },
-          "rhs": {
-            "identifier": "*",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "sel": {
-            "identifier": "0",
-            "reference": "",
-            "type": 4,
-            "width": 8
-          },
-          "xor_out": {
-            "identifier": ":",
-            "reference": "",
-            "type": 4,
-            "width": 4
-          },
-          "zero": {
-            "identifier": "-",
-            "reference": "",
-            "type": 4,
-            "width": 1
-          }
-        }
-      },
-      "name": "ALU4",
-      "subscopes": {
+    "dumpvars": [
+        []
+    ],
+    "scopes": {
         "data": {
-          "ports": {
-            "enable_signal": {
-              "identifier": "?",
-              "reference": "",
-              "type": 4,
-              "width": 1
-            },
-            "in": {
-              "identifier": "+",
-              "reference": "",
-              "type": 4,
-              "width": 3
-            },
-            "out": {
-              "identifier": "0",
-              "reference": "",
-              "type": 4,
-              "width": 8
+            "ports": {
+                "carry": {
+                    "identifier": "/",
+                    "reference": "",
+                    "type": 4,
+                    "width": 1
+                },
+                "lhs": {
+                    "identifier": ")",
+                    "reference": "",
+                    "type": 4,
+                    "width": 4
+                },
+                "op": {
+                    "identifier": "+",
+                    "reference": "",
+                    "type": 4,
+                    "width": 3
+                },
+                "out": {
+                    "identifier": ",",
+                    "reference": "",
+                    "type": 4,
+                    "width": 4
+                },
+                "overflow": {
+                    "identifier": ".",
+                    "reference": "",
+                    "type": 4,
+                    "width": 1
+                },
+                "rhs": {
+                    "identifier": "*",
+                    "reference": "",
+                    "type": 4,
+                    "width": 4
+                },
+                "zero": {
+                    "identifier": "-",
+                    "reference": "",
+                    "type": 4,
+                    "width": 1
+                }
             }
-          }
         },
-        "name": "d38",
-        "subscopes": null,
+        "name": "TOP",
+        "subscopes": {
+            "data": {
+                "ports": {
+                    "and_out": {
+                        "identifier": "6",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "carry": {
+                        "identifier": "/",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "cla4_out": {
+                        "identifier": "1",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "is_eq": {
+                        "identifier": "$",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "is_rhs_bigger": {
+                        "identifier": "=",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "lhs": {
+                        "identifier": ")",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "not_lhs_out": {
+                        "identifier": "4",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "op": {
+                        "identifier": "+",
+                        "reference": "",
+                        "type": 4,
+                        "width": 3
+                    },
+                    "op_add": {
+                        "identifier": "#",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_and": {
+                        "identifier": "5",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_lhs_eq": {
+                        "identifier": ";",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_lhs_less": {
+                        "identifier": "<",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_not_lhs": {
+                        "identifier": "3",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_or": {
+                        "identifier": "7",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_sub": {
+                        "identifier": "2",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "op_xor": {
+                        "identifier": "9",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "or_out": {
+                        "identifier": "8",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "out": {
+                        "identifier": ",",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "overflow": {
+                        "identifier": ".",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    },
+                    "rhs": {
+                        "identifier": "*",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "sel": {
+                        "identifier": "0",
+                        "reference": "",
+                        "type": 4,
+                        "width": 8
+                    },
+                    "xor_out": {
+                        "identifier": ":",
+                        "reference": "",
+                        "type": 4,
+                        "width": 4
+                    },
+                    "zero": {
+                        "identifier": "-",
+                        "reference": "",
+                        "type": 4,
+                        "width": 1
+                    }
+                }
+            },
+            "name": "ALU4",
+            "subscopes": {
+                "data": {
+                    "ports": {
+                        "enable_signal": {
+                            "identifier": "?",
+                            "reference": "",
+                            "type": 4,
+                            "width": 1
+                        },
+                        "in": {
+                            "identifier": "+",
+                            "reference": "",
+                            "type": 4,
+                            "width": 3
+                        },
+                        "out": {
+                            "identifier": "0",
+                            "reference": "",
+                            "type": 4,
+                            "width": 8
+                        }
+                    }
+                },
+                "name": "d38",
+                "subscopes": null,
+                "type": "module"
+            },
+            "type": "module"
+        },
         "type": "module"
-      },
-      "type": "module"
     },
-    "type": "module"
-  },
-  "value_changes": {
-    "1": {
-      "$": "0",
-      "%": "0",
-      "&": "b0010",
-      "'": "b0010",
-      "(": "b1011",
-      ")": "b1011",
-      "*": "b0010",
-      "+": "b000",
-      ",": "b1111",
-      "-": "0",
-      ".": "0",
-      "/": "0",
-      "0": "b00000001",
-      "1": "b1111",
-      "2": "0",
-      "3": "0",
-      "4": "b0100",
-      "5": "0",
-      "6": "b0010",
-      "7": "0",
-      "8": "b1011",
-      "9": "0",
-      ":": "b1001",
-      ";": "0",
-      "<": "0",
-      "=": "1",
-      ">": "b00100",
-      "?": "1"
+    "value_changes": {
+        "1": {
+            "$": "0",
+            "%": "0",
+            "&": "b0010",
+            "'": "b0010",
+            "(": "b1011",
+            ")": "b1011",
+            "*": "b0010",
+            "+": "b000",
+            ",": "b1111",
+            "-": "0",
+            ".": "0",
+            "/": "0",
+            "0": "b00000001",
+            "1": "b1111",
+            "2": "0",
+            "3": "0",
+            "4": "b0100",
+            "5": "0",
+            "6": "b0010",
+            "7": "0",
+            "8": "b1011",
+            "9": "0",
+            ":": "b1001",
+            ";": "0",
+            "<": "0",
+            "=": "1",
+            ">": "b00100",
+            "?": "1"
+        },
+        "2": {
+            "%": "1",
+            "&": "b1101",
+            "'": "b1001",
+            "(": "b1111",
+            "+": "b001",
+            ",": "b0000",
+            "-": "1",
+            "/": "1",
+            "0": "b00000010",
+            "1": "b0000",
+            "2": "1",
+            ">": "b11111"
+        },
+        "3": {
+            "0": "b00000100",
+            "0-": ",",
+            "2": "0",
+            "3": "1",
+            "b0100": "+"
+        },
+        "4": {}
     },
-    "2": {
-      "%": "1",
-      "&": "b1101",
-      "'": "b1001",
-      "(": "b1111",
-      "+": "b001",
-      ",": "b0000",
-      "-": "1",
-      "/": "1",
-      "0": "b00000010",
-      "1": "b0000",
-      "2": "1",
-      ">": "b11111"
-    },
-    "3": {
-      "0": "b00000100",
-      "0-": ",",
-      "2": "0",
-      "3": "1",
-      "b0100": "+"
-    },
-    "4": {}
-  },
-  "version": ""
+    "version": ""
 }
