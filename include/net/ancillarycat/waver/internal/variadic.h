@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 #pragma region variadic macros
-
+// clang-format off
 // Helper macros to count the number of arguments up to 63
 #define WAVER_VFUNC_ARG_COUNT_IMPL( \
 		_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, \
@@ -51,10 +51,10 @@ extern "C" {
 		13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, \
 		0 \
 )
-
+// clang-format on
 // Helper macros to concatenate function name and argument count
 #define WAVER_VFUNC_CONCAT_IMPL(func, underscore, count) func##underscore##count
-#define WAVER_VFUNC_CONCAT(func, count) WAVER_VFUNC_CONCAT_IMPL(func, _,count)
+#define WAVER_VFUNC_CONCAT(func, count) WAVER_VFUNC_CONCAT_IMPL(func, _, count)
 
 // Main macro to select the appropriate function
 #define WAVER__VFUNC(func, ...) WAVER_VFUNC_CONCAT(func, WAVER_VFUNC_ARG_COUNT(__VA_ARGS__))(__VA_ARGS__)

@@ -4,7 +4,8 @@ project(waver LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
-
+# "-DCMAKE_TOOLCHAIN_FILE=M:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+# set(CMAKE_TOOLCHAIN_FILE "M:/vcpkg/scripts/buildsystems/vcpkg.cmake")
 #set(Boost_USE_STATIC_LIBS OFF)
 #set(Boost_USE_MULTITHREADED ON)
 #set(Boost_USE_STATIC_RUNTIME OFF)

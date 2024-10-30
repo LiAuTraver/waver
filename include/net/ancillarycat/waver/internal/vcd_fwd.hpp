@@ -27,8 +27,8 @@ class dumpvars;
 
 class value_changes;
 
-using ports_value_t											 = std::string;
-using string_t													 = std::string;
-using change_t													 = std::pair<identifier_t, ports_value_t>;
+using ports_value_t                      = std::string;
+using string_t                           = std::string;
+using change_t                           = std::pair<identifier_t, ports_value_t>;
 static inline constexpr auto to_string_t = [](auto &&v) -> string_t { return std::string(v); };
 } // namespace net::ancillarycat::waver

@@ -53,7 +53,7 @@ using absl::Status;
 using absl::StatusCode;
 using absl::StatusOr;
 using identifier_t = std::string;
-using json_t			 = nlohmann::json;
+using json_t       = nlohmann::json;
 
 // using time_t			 = size_t;
 using namespace std::string_view_literals;
@@ -61,24 +61,24 @@ static constexpr inline auto empty_sv = ""sv;
 } // namespace net::ancillarycat::waver
 
 namespace net::ancillarycat::waver::keywords {
-static inline constexpr auto $version				 = "$version"sv;
-static inline constexpr auto $date					 = "$date"sv;
-static inline constexpr auto $timescale			 = "$timescale"sv;
-static inline constexpr auto $scope					 = "$scope"sv;
-static inline constexpr auto $upscope				 = "$upscope"sv;
-static inline constexpr auto $var						 = "$var"sv;
-static inline constexpr auto $comment				 = "$comment"sv;
-static inline constexpr auto $dumpvars			 = "$dumpvars"sv;
-static inline constexpr auto $dumpall				 = "$dumpall"sv;
-static inline constexpr auto $dumpon				 = "$dumpon"sv;
-static inline constexpr auto $dumpoff				 = "$dumpoff"sv;
-static inline constexpr auto $end						 = "$end"sv;
+static inline constexpr auto $version        = "$version"sv;
+static inline constexpr auto $date           = "$date"sv;
+static inline constexpr auto $timescale      = "$timescale"sv;
+static inline constexpr auto $scope          = "$scope"sv;
+static inline constexpr auto $upscope        = "$upscope"sv;
+static inline constexpr auto $var            = "$var"sv;
+static inline constexpr auto $comment        = "$comment"sv;
+static inline constexpr auto $dumpvars       = "$dumpvars"sv;
+static inline constexpr auto $dumpall        = "$dumpall"sv;
+static inline constexpr auto $dumpon         = "$dumpon"sv;
+static inline constexpr auto $dumpoff        = "$dumpoff"sv;
+static inline constexpr auto $end            = "$end"sv;
 static inline constexpr auto $enddefinitions = "$enddefinitions"sv;
 
 static inline constexpr auto module = "module"sv;
-static inline constexpr auto task		= "task"sv;
-static inline constexpr auto wire		= "wire"sv;
-static inline constexpr auto reg		= "reg"sv;
+static inline constexpr auto task   = "task"sv;
+static inline constexpr auto wire   = "wire"sv;
+static inline constexpr auto reg    = "reg"sv;
 } // namespace net::ancillarycat::waver::keywords
 
 namespace net::ancillarycat::waver::utils {}
