@@ -1,9 +1,11 @@
 #pragma once
 #include <absl/strings/string_view.h>
 #include <algorithm>
+#ifdef WAVER_USE_BOOST_CONTRACT
 #include <boost/contract.hpp>
 #include <boost/contract/check.hpp>
 #include <boost/contract/function.hpp>
+#endif
 #include <cctype>
 #include <charconv>
 #include <csignal>
@@ -45,9 +47,9 @@ class value_change_dump {
   public:
     inline constexpr explicit parser(value_change_dump &vcd) noexcept : vcd(vcd) {}
 
-    inline constexpr parser(const parser &)        = delete;
-    inline constexpr parser(parser &&rhs) noexcept = delete;
-    inline constexpr ~parser() noexcept            = default;
+    inline constexpr  parser(const parser &)        = delete;
+    inline constexpr  parser(parser &&rhs) noexcept = delete;
+    inline constexpr ~parser() noexcept             = default;
 
     inline constexpr parser &operator=(const parser &)        = delete;
     inline constexpr parser &operator=(parser &&rhs) noexcept = delete;
@@ -115,7 +117,7 @@ public:
   inline explicit constexpr value_change_dump() = default;
 
   inline constexpr value_change_dump(const value_change_dump &);
-  inline value_change_dump(value_change_dump &&) noexcept;
+  inline           value_change_dump(value_change_dump &&) noexcept;
 
   inline value_change_dump           &operator=(value_change_dump &&) noexcept;
   inline constexpr value_change_dump &operator=(const value_change_dump &);
@@ -134,7 +136,7 @@ public:
   /// @return OkStatus() if successful, various errors otherwise
   WAVER_NODISCARD inline static expected_t parse(auto &&source)
     requires std::same_as<std::remove_cvref_t<decltype(source)>, path_t> or
-             std::same_as<std::remove_cvref_t<decltype(source)>, string_t>
+    std::same_as<std::remove_cvref_t<decltype(source)>, string_t>
   {
     auto vcd    = value_change_dump{};
     auto parser = parser_t{vcd};
@@ -224,7 +226,7 @@ inline Status value_change_dump::parser::parse() {
 }
 
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_dumpvars() {
-  boost::contract::check c = boost::contract::function().precondition([&]() { return token == keywords::$dumpvars; });
+  WAVER_PRECONDITION(token == keywords::$dumpvars);
 
   lexer.consume(2); // consume $dumpvars
   for (token = lexer.current(); token != keywords::$end; token = lexer.current()) {
@@ -275,11 +277,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
   return parse_error_t::kSuccess;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_header() {
-  // clang-format off
-    boost::contract::check c = boost::contract::function()
-            .precondition([&] { return lexer.current() == lexer.front(); })
-            .postcondition([&] { return lexer.current() == keywords::$enddefinitions; });
-  // clang-format on
+  WAVER_PRECONDITION(lexer.current() == lexer.front());
 
   for (/*token = lexer.front()*/; token != keywords::$enddefinitions; token = lexer.current()) {
     if (token == keywords::$version) {
@@ -308,11 +306,11 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
     }
     std::println("token: {}", token);
   }
+  WAVER_POSTCONDITION(lexer.current() == keywords::$enddefinitions);
   return parse_error_t::kSuccess;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_version() {
-  boost::contract::check c =
-    boost::contract::function().precondition([&] { return lexer.current() == keywords::$version; });
+  WAVER_PRECONDITION(token == keywords::$version);
 
   lexer.consume(); // consume $version
 
@@ -328,8 +326,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
   return parse_error_t::kUnexpectedEndOfFile;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_comments() {
-  boost::contract::check c =
-    boost::contract::function().precondition([&] { return lexer.current() == keywords::$comment; });
+  WAVER_PRECONDITION(token == keywords::$comment);
 
   lexer.consume(); // consume $comment
 
@@ -345,8 +342,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
   return parse_error_t::kUnexpectedEndOfFile;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_timescale() {
-  boost::contract::check c =
-    boost::contract::function().precondition([&] { return lexer.current() == keywords::$timescale; });
+  WAVER_PRECONDITION(token == keywords::$timescale);
 
   lexer.consume(); // consume $timescale
 
@@ -363,8 +359,7 @@ inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse
 }
 inline value_change_dump::parser::parse_error_t
 value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-recursion)
-  boost::contract::check c =
-    boost::contract::function().precondition([&] { return lexer.current() == keywords::$scope; });
+  WAVER_PRECONDITION(token == keywords::$scope);
 
   auto current_scope = std::make_shared<scope>();
   if (parent == nullptr) {
@@ -402,8 +397,7 @@ value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-re
 }
 inline value_change_dump::parser::parse_error_t
 value_change_dump::parser::parse_module(scope *current_scope) { // NOLINT(misc-no-recursion)
-  boost::contract::check c =
-    boost::contract::function().precondition([&] { return lexer.current() == keywords::module; });
+  WAVER_PRECONDITION(token == keywords::module);
 
   lexer.consume(); // consume `module` keyword
   token = lexer.consume(); // module name
@@ -437,10 +431,8 @@ value_change_dump::parser::parse_module(scope *current_scope) { // NOLINT(misc-n
   return parse_error_t::kSuccess;
 }
 inline value_change_dump::parser::parse_error_t value_change_dump::parser::parse_variable(const scope *current_scope) {
-  boost::contract::check c = boost::contract::function().precondition([&] {
-    return lexer.current() == keywords::$var &&
-           current_scope->data->get_type() == scope_value_base::scope_type::kModule;
-  });
+  WAVER_PRECONDITION(token == keywords::$var);
+  WAVER_PRECONDITION(current_scope->data->get_type() == scope_value_base::scope_type::kModule);
 
   lexer.consume(); // consume $var
 

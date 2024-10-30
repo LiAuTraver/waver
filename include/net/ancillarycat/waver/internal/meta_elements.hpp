@@ -1,6 +1,8 @@
 #pragma once
+#ifdef WAVER_USE_BOOST_CONTRACT
 #include <boost/contract/check.hpp>
 #include <boost/contract/function.hpp>
+#endif
 #include <cstdint>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -61,7 +63,7 @@ public:
 			}
 		}};
     // clang-format on
-    WAVER_RUNTIME_ASSERT(j.is_object());
+    WAVER_POSTCONDITION(j.is_object());
   }
 
 public:
@@ -137,8 +139,6 @@ private:
 
 private:
   friend inline void to_json(json_t &j, const module &module) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
-
     std::ranges::for_each(module.ports, [&](auto &&port) {
       auto port_json = json_t{};
       to_json(port_json, port);
@@ -146,7 +146,9 @@ private:
       WAVER_RUNTIME_ASSERT(port_json.front() == port_json.back());
       j["ports"].merge_patch(port_json);
     });
+  WAVER_POSTCONDITION(j.is_object());
   }
+
 };
 class task : public scope_value_base {
   friend class value_change_dump;
@@ -163,7 +165,7 @@ private:
 
 private:
   friend inline void to_json(json_t &j, const task &task) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+    WAVER_POSTCONDITION(j.is_object());
 
     j.emplace_back("task");
   }
@@ -210,7 +212,6 @@ public:
 private:
   /// @remark because it holds a shared_ptr, the to_json dinstincts with others.
   friend inline void to_json(json_t &j, const scope &scope) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
 
     auto subscopes_json = json_t{};
     std::ranges::for_each(scope.subscopes, [&](auto &&subscope) { to_json(subscopes_json, *subscope); });
@@ -237,7 +238,7 @@ private:
     j["data"]      = data_json; //! <- data json shall be an array
     j["subscopes"] = subscopes_json;
 
-    WAVER_RUNTIME_ASSERT(j.is_object());
+    WAVER_POSTCONDITION(j.is_object());
   }
 
 private:
@@ -280,7 +281,7 @@ private:
   friend void to_json(json_t &j, const timestamp &timestamp) {
     j[std::to_string(timestamp.time)].merge_patch(timestamp.changes);
 
-    WAVER_RUNTIME_ASSERT(j.is_object());
+    WAVER_POSTCONDITION(j.is_object());
   }
 };
 
@@ -326,7 +327,7 @@ public:
 
 private:
   friend void to_json(json_t &j, const date &date) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+    WAVER_POSTCONDITION(j.is_object());
 
     if (not date.time_point.empty())
       j["date"] = date.time_point;
@@ -432,13 +433,13 @@ public:
 
 private:
   friend void to_json(json_t &j, const value_changes &value_changes) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+    WAVER_POSTCONDITION(j.is_object());
 
     std::ranges::for_each(value_changes.timestamps, [&](auto &&timestamp) {
       auto timestamp_json = json_t{};
       to_json(timestamp_json, timestamp);
-      WAVER_RUNTIME_ASSERT(timestamp_json.is_object());
-      WAVER_RUNTIME_ASSERT(timestamp_json.front() == timestamp_json.back());
+      WAVER_PRECONDITION(timestamp_json.is_object());
+      WAVER_PRECONDITION(timestamp_json.front() == timestamp_json.back());
       j[WAVER_TO_STRING(value_changes)].merge_patch(timestamp_json);
     });
   }
@@ -472,7 +473,7 @@ public:
 
 private:
   friend void to_json(json_t &j, const dumpvars &dumpvars) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return j.is_object(); });
+    WAVER_POSTCONDITION(j.is_object());
 
     j[WAVER_TO_STRING(dumpvars)].emplace_back(dumpvars.changes);
   }

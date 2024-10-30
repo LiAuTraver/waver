@@ -63,13 +63,41 @@
   else {                                                                                                               \
     WAVER_PRINT_ERROR_MSG(x)                                                                                           \
   }
-#define WAVER_RUNTIME_REQUIRE_IMPL_2(x, y) WAVER_RUNTIME_REQUIRE_IMPL_EQUAL(x, y)
-#define WAVER_RUNTIME_REQUIRE_IMPL_1(x) WAVER_RUNTIME_REQUIRE_IMPL_SATISFY(x)
-#if WAVER_DEBUG_ENABLED
-#define WAVER_RUNTIME_REQUIRE_IMPL(...) WAVER__VFUNC(WAVER_RUNTIME_REQUIRE_IMPL, __VA_ARGS__)
-#else
-// if debug is turned off, do nothing.
-#define WAVER_RUNTIME_REQUIRE_IMPL(...)
+#ifdef WAVER_USE_BOOST_CONTRACT
+#include <boost/contract.hpp>
+#define WAVER_PRECONDITION_IMPL_1(x)                                                                                   \
+  boost::contract::check WAVER_EXPAND_COUNTER(waver_boost_check_precondition_should_be_true) =                         \
+    boost::contract::function().precondition([&]() -> bool { return (!!(x)); });
+#define WAVER_PRECONDITION_IMPL_2(x, y)                                                                                \
+  boost::contract::check WAVER_EXPAND_COUNTER(waver_boost_check_precondition_should_equal) =                           \
+    boost::contract::function().precondition([&]() -> bool { return ((x) == (y)); });
+#define WAVER_POSTCONDITION_IMPL_1(x)                                                                                  \
+  boost::contract::check WAVER_EXPAND_COUNTER(waver_boost_check_postcondition_should_be_true) =                        \
+    boost::contract::function().postcondition([&]() -> bool { return (!!(x)); });
+#define WAVER_POSTCONDITION_IMPL_2(x, y)                                                                               \
+  boost::contract::check WAVER_EXPAND_COUNTER(waver_boost_check_postcondition_should_equal) =                          \
+    boost::contract::function().postcondition([&]() -> bool { return ((x) == (y)); });
 #endif
 
+#if WAVER_DEBUG_ENABLED
+
+#ifdef WAVER_USE_BOOST_CONTRACT
 #define WAVER_RUNTIME_ASSERT(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
+#define WAVER_PRECONDITION(...) WAVER__VFUNC(WAVER_PRECONDITION_IMPL, __VA_ARGS__)
+#define WAVER_POSTCONDITION(...) WAVER__VFUNC(WAVER_POSTCONDITION_IMPL, __VA_ARGS__)
+#else
+#define WAVER_RUNTIME_REQUIRE_IMPL_2(x, y) WAVER_RUNTIME_REQUIRE_IMPL_EQUAL(x, y)
+#define WAVER_RUNTIME_REQUIRE_IMPL_1(x) WAVER_RUNTIME_REQUIRE_IMPL_SATISFY(x)
+#define WAVER_RUNTIME_REQUIRE_IMPL(...) WAVER__VFUNC(WAVER_RUNTIME_REQUIRE_IMPL, __VA_ARGS__)
+#define WAVER_RUNTIME_ASSERT(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
+#define WAVER_PRECONDITION(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
+#define WAVER_POSTCONDITION(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
+#endif
+
+#else
+// if debug was turned off, do nothing.
+#define WAVER_RUNTIME_REQUIRE_IMPL(...)
+#define WAVER_RUNTIME_ASSERT(...)
+#define WAVER_PRECONDITION(...)
+#define WAVER_POSTCONDITION(...)
+#endif

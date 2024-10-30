@@ -1,5 +1,4 @@
 #pragma once
-#include <absl/status/status.h>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -9,6 +8,7 @@
 namespace net::ancillarycat::waver {
 template <typename PathType, typename StringType, typename InputStreamType, typename StringStreamType>
 class file_reader;
+
 template <typename StringType, typename StringViewType, typename PathType, typename BooleanType, typename StatusType>
 class lexer;
 

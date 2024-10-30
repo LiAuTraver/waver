@@ -1,8 +1,12 @@
 #pragma once
 #include <absl/status/status.h>
 #include <algorithm>
+#include "contract.hpp"
+#ifdef WAVER_USE_BOOST_CONTRACT
 #include <boost/contract.hpp>
 #include <boost/contract/check.hpp>
+#include <boost/contract/function.hpp>
+#endif
 #include <cctype>
 #include <csignal>
 #include <cstddef>
@@ -140,7 +144,7 @@ public:
   /// @brief get the first element
   /// @pre the container is not empty
   WAVER_NODISCARD inline string_view_t front() const noexcept {
-    boost::contract::check c = boost::contract::function().precondition([&] { return not token_views.empty(); });
+    WAVER_PRECONDITION(not token_views.empty());
 
     return token_views.front();
   }
@@ -156,7 +160,7 @@ public:
   /// @note will always be an empty string_view_t
   WAVER_NODISCARD inline string_view_t back() const noexcept {
 
-    boost::contract::check c = boost::contract::function().precondition([&] { return not token_views.empty(); });
+    WAVER_PRECONDITION(not token_views.empty());
 
     return token_views.back();
   }
@@ -174,7 +178,7 @@ public:
   ///				the step is the short hand for discarding the current token;
   ///				if the return value was intended to be used, DONT use the step parameter
   inline string_view_t consume(size_type step = 1) {
-    boost::contract::check c = boost::contract::function().precondition([&] { return cursor < token_views.size(); });
+    WAVER_PRECONDITION(cursor < token_views.size());
 
     auto token = token_views[cursor];
     cursor += step;

@@ -57,11 +57,20 @@ extern "C" {
 #define WAVER_VFUNC_CONCAT(func, count) WAVER_VFUNC_CONCAT_IMPL(func, _, count)
 
 // Main macro to select the appropriate function
-#define WAVER__VFUNC(func, ...) WAVER_VFUNC_CONCAT(func, WAVER_VFUNC_ARG_COUNT(__VA_ARGS__))(__VA_ARGS__)
+#define WAVER__VFUNC(func, ...) WAVER_VFUNC_CONCAT(func, WAVER_VFUNC_ARG_COUNT(__VA_ARGS__))(__VA_ARGS__) // NOLINT(bugprone-reserved-identifier)
+
+#ifndef __COUNTER__
+#define __COUNTER__ __LINE__
+#define WAVER_COUNTER __COUNTER__
+#else
+#define WAVER_COUNTER __COUNTER__
+#endif
 
 // Helper macros to expand __COUNTER__
 #define EXPAND_COUNTER_HELPER(prefix, underscore, counter) prefix##underscore##counter
 #define EXPAND_COUNTER(name, counter) EXPAND_COUNTER_HELPER(name, _, counter)
+
+#define WAVER_EXPAND_COUNTER(name) EXPAND_COUNTER(name, WAVER_COUNTER)
 
 #pragma endregion
 #ifdef __cplusplus

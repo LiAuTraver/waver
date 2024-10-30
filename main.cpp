@@ -1,18 +1,26 @@
 #define WAVER_DEBUG_ENABLED 1
 
+#include <absl/status/status.h>
+#include <absl/status/statusor.h>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <net/ancillarycat/waver/waver.hpp>
 #include <nlohmann/json.hpp>
 #include <print>
-#include "include/net/ancillarycat/waver/waver.hpp"
+#include <string>
+#include <string_view>
 
 
 int main(const int argc, const char *const *const argv) {
   std::filesystem::path source_file;
   std::filesystem::path output_file;
   if (argc == 1) {
-    source_file = R"(Z:\Cpp-Playground\waver\test\ALU4.vcd)";
-    output_file = R"(Z:\Cpp-Playground\waver\test\ALU4.json)";
+    // source_file = R"(Z:\Cpp-Playground\waver\test\ALU4.vcd)";
+    // output_file = R"(Z:\Cpp-Playground\waver\test\ALU4.json)";
+    std::println("Waver: unknown command line arguments");
+    std::println("Usage: waver <source_file> <output_file>");
+    std::println("Usage: waver <source_file>");
   }
   if (argc == 2) {
     source_file = argv[1];
@@ -23,12 +31,14 @@ int main(const int argc, const char *const *const argv) {
     source_file = argv[1];
     output_file = argv[2];
   }
-  auto res = net::ancillarycat::waver::value_change_dump::parse(source_file)
-               .value_or(net::ancillarycat::waver::value_change_dump{});
-
-  auto j = res.as_json();
-
+  const auto res = net::ancillarycat::waver::value_change_dump::parse(source_file);
+  if (not res.ok()) {
+    std::println("Failed to parse the VCD file: {}", res.status().message());
+    return EXIT_FAILURE;
+  }
+  const auto    j = res->as_json();
   std::ofstream output(output_file);
   output << j.dump(4);
+  std::println("Successfully wrote to {}", output_file.string());
   return 0;
 }
