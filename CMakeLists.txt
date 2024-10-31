@@ -29,6 +29,7 @@ endif ()
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 include_directories(include)
 
@@ -45,11 +46,13 @@ target_link_libraries(waver_test PRIVATE
         GTest::gtest_main
         nlohmann_json::nlohmann_json
         absl::base
+        fmt::fmt
 )
 
 target_link_libraries(waver PRIVATE
         nlohmann_json::nlohmann_json
         absl::base
+        fmt::fmt
 )
 
 #include(CTest)

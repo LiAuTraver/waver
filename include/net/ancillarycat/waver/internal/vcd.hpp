@@ -34,6 +34,8 @@
 #include "meta_elements.hpp"
 #include "vcd_fwd.hpp"
 
+#include <absl/status/statusor.h>
+
 //////////////////////////////////////////////////////////////////////////////
 /// 		Declaration
 //////////////////////////////////////////////////////////////////////////////
@@ -47,12 +49,12 @@ class value_change_dump {
   public:
     inline constexpr explicit parser(value_change_dump &vcd) noexcept : vcd(vcd) {}
 
-    inline constexpr  parser(const parser &)        = delete;
-    inline constexpr  parser(parser &&rhs) noexcept = delete;
-    inline constexpr ~parser() noexcept             = default;
+    inline constexpr  parser(const parser &)     = delete;
+    inline constexpr  parser(parser &&) noexcept = delete;
+    inline constexpr ~parser() noexcept          = default;
 
-    inline constexpr parser &operator=(const parser &)        = delete;
-    inline constexpr parser &operator=(parser &&rhs) noexcept = delete;
+    inline constexpr parser &operator=(const parser &)     = delete;
+    inline constexpr parser &operator=(parser &&) noexcept = delete;
 
 
   public:
@@ -111,7 +113,7 @@ public:
   using path_t        = std::filesystem::path;
   using string_t      = std::string;
   using string_view_t = std::string_view;
-  using expected_t    = StatusOr<value_change_dump>;
+  using expected_t    = absl::StatusOr<value_change_dump>;
 
 public:
   inline explicit constexpr value_change_dump() = default;
@@ -120,7 +122,7 @@ public:
   inline           value_change_dump(value_change_dump &&) noexcept;
 
   inline value_change_dump           &operator=(value_change_dump &&) noexcept;
-  inline constexpr value_change_dump &operator=(const value_change_dump &);
+  inline constexpr value_change_dump &operator=(const value_change_dump &rhs) = default;
 
   inline constexpr ~value_change_dump() noexcept = default;
 
@@ -128,7 +130,7 @@ public:
   /// @brief convert the value change dump to a json object
   /// @param self this object
   /// @return a json object
-  WAVER_NODISCARD inline constexpr json_t as_json(this auto &&self) noexcept { return self; }
+  WAVER_NODISCARD WAVER_FORCEINLINE constexpr json_t as_json(this auto &&self) noexcept { return self; }
 
 public:
   /// @brief parse the VCD file
@@ -186,7 +188,6 @@ inline value_change_dump &value_change_dump::operator=(value_change_dump &&rhs) 
   value_changes = std::move(rhs.value_changes);
   return *this;
 }
-inline constexpr value_change_dump &value_change_dump::operator=(const value_change_dump &rhs) = default;
 
 
 enum WAVER_NODISCARD value_change_dump::parser::parse_error : std::uint8_t {

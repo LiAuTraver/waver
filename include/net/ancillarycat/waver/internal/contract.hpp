@@ -23,6 +23,7 @@
 #define WAVER_DEBUG_BREAK raise(SIGTRAP);
 #define WAVER_FUNCTION_NAME __func__
 #endif
+#if WAVER_DEBUG_ENABLED
 #define WAVER_AMBIGUOUS_ELSE_BLOCKER                                                                                   \
   switch (0)                                                                                                           \
   case 0:                                                                                                              \
@@ -79,7 +80,6 @@
     boost::contract::function().postcondition([&]() -> bool { return ((x) == (y)); });
 #endif
 
-#if WAVER_DEBUG_ENABLED
 
 #ifdef WAVER_USE_BOOST_CONTRACT
 #define WAVER_RUNTIME_ASSERT(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);

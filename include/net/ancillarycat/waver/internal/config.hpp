@@ -6,7 +6,6 @@
 
 #pragma once
 #include <absl/status/status.h>
-#include <absl/status/statusor.h>
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 #include <string_view>
@@ -51,11 +50,10 @@ using absl::NotFoundError;
 using absl::OkStatus;
 using absl::Status;
 using absl::StatusCode;
-using absl::StatusOr;
+
 using identifier_t = std::string;
 using json_t       = nlohmann::json;
 
-// using time_t			 = size_t;
 using namespace std::string_view_literals;
 static constexpr inline auto empty_sv = ""sv;
 } // namespace net::ancillarycat::waver
