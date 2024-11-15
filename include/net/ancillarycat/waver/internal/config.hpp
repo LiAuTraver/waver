@@ -78,5 +78,3 @@ static inline constexpr auto task   = "task"sv;
 static inline constexpr auto wire   = "wire"sv;
 static inline constexpr auto reg    = "reg"sv;
 } // namespace net::ancillarycat::waver::keywords
-
-namespace net::ancillarycat::waver::utils {}

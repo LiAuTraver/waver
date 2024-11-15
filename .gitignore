@@ -49,4 +49,4 @@ build
 
 old
 
-mytest.cpp
+mytest*.cpp

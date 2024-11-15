@@ -71,12 +71,8 @@ private:
 };
 
 /// @brief a simple lexer that reads a file and tokenizes it
-/// @tparam StringType the string type
-/// @tparam StringViewType the string view type
-/// @tparam PathType the path type
-/// @tparam BooleanType the boolean type
-/// @tparam StatusType the status type
-/// @note the lexer is not thread-safe, and will consume a lot of memory if the file is too big. @todo here.
+/// @note the lexer is not thread-safe, and will consume a lot of memory if the file is too big. 
+/// @todo here.
 template <typename StringType = std::string, typename StringViewType = std::string_view,
           typename PathType = std::filesystem::path, typename BooleanType = bool, typename StatusType = absl::Status>
 class lexer {

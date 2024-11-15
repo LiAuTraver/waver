@@ -1,5 +1,4 @@
 #define WAVER_DEBUG_ENABLED 1
-
 #include <absl/status/status.h>
 #include <absl/status/statusor.h>
 #include <cstdlib>

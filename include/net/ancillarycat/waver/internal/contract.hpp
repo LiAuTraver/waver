@@ -5,7 +5,6 @@
 #include <print>
 #include "variadic.h"
 
-
 #ifdef __clang__
 #define WAVER_FORCEINLINE [[clang::always_inline]]
 #define WAVER_DEBUG_BREAK __builtin_debugtrap();
@@ -23,7 +22,7 @@
 #define WAVER_DEBUG_BREAK raise(SIGTRAP);
 #define WAVER_FUNCTION_NAME __func__
 #endif
-#if WAVER_DEBUG_ENABLED
+#ifdef WAVER_DEBUG_ENABLED
 #define WAVER_AMBIGUOUS_ELSE_BLOCKER                                                                                   \
   switch (0)                                                                                                           \
   case 0:                                                                                                              \
@@ -80,15 +79,15 @@
     boost::contract::function().postcondition([&]() -> bool { return ((x) == (y)); });
 #endif
 
+#define WAVER_RUNTIME_REQUIRE_IMPL_2(x, y) WAVER_RUNTIME_REQUIRE_IMPL_EQUAL(x, y)
+#define WAVER_RUNTIME_REQUIRE_IMPL_1(x) WAVER_RUNTIME_REQUIRE_IMPL_SATISFY(x)
+#define WAVER_RUNTIME_REQUIRE_IMPL(...) WAVER__VFUNC(WAVER_RUNTIME_REQUIRE_IMPL, __VA_ARGS__)
 
 #ifdef WAVER_USE_BOOST_CONTRACT
 #define WAVER_RUNTIME_ASSERT(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
 #define WAVER_PRECONDITION(...) WAVER__VFUNC(WAVER_PRECONDITION_IMPL, __VA_ARGS__)
 #define WAVER_POSTCONDITION(...) WAVER__VFUNC(WAVER_POSTCONDITION_IMPL, __VA_ARGS__)
 #else
-#define WAVER_RUNTIME_REQUIRE_IMPL_2(x, y) WAVER_RUNTIME_REQUIRE_IMPL_EQUAL(x, y)
-#define WAVER_RUNTIME_REQUIRE_IMPL_1(x) WAVER_RUNTIME_REQUIRE_IMPL_SATISFY(x)
-#define WAVER_RUNTIME_REQUIRE_IMPL(...) WAVER__VFUNC(WAVER_RUNTIME_REQUIRE_IMPL, __VA_ARGS__)
 #define WAVER_RUNTIME_ASSERT(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
 #define WAVER_PRECONDITION(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
 #define WAVER_POSTCONDITION(...) WAVER_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
@@ -96,7 +95,6 @@
 
 #else
 // if debug was turned off, do nothing.
-#define WAVER_RUNTIME_REQUIRE_IMPL(...)
 #define WAVER_RUNTIME_ASSERT(...)
 #define WAVER_PRECONDITION(...)
 #define WAVER_POSTCONDITION(...)

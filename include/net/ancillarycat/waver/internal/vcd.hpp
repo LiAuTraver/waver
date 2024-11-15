@@ -127,12 +127,6 @@ public:
   inline constexpr ~value_change_dump() noexcept = default;
 
 public:
-  /// @brief convert the value change dump to a json object
-  /// @param self this object
-  /// @return a json object
-  WAVER_NODISCARD WAVER_FORCEINLINE constexpr json_t as_json(this auto &&self) noexcept { return self; }
-
-public:
   /// @brief parse the VCD file
   /// @param source the path to the file
   /// @return OkStatus() if successful, various errors otherwise
@@ -150,6 +144,11 @@ public:
   }
 
 public:
+  /// @brief convert the value change dump to a json object
+  /// @param self this object
+  /// @return a json object
+  WAVER_NODISCARD WAVER_FORCEINLINE constexpr json_t as_json(this auto &&self) noexcept { return self; }
+
   /// @brief friend function to convert the value change dump to json
   /// @param j the json object
   /// @param vcd the value change dump to serialize
@@ -213,11 +212,11 @@ inline Status value_change_dump::parser::parse() {
   token = lexer.front();
   if (const auto res = parse_header(); res != parse_error_t::kSuccess)
     return InvalidArgumentError("Failed to parse header" + std::string(token.begin(), token.end()));
-  else
-    // token was at `$enddefinitions`, so does lexer.current(); call
-    // lexer.consume() should also yield `$enddefinitions`
-    lexer.consume(2); // token was at `$end` now
 
+  // token was at `$enddefinitions`, so does lexer.current(); call
+  // lexer.consume() should also yield `$enddefinitions`
+  lexer.consume(2);
+  // token was at `$end` now
   token = lexer.current(); // token should be the first token after `$end`
   // auto _ = parse_body();
   if (const auto res = parse_body(); res != parse_error_t::kSuccess)
@@ -377,7 +376,7 @@ value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-re
       token = lexer.consume();
       if (token = lexer.consume(); token != keywords::$end)
         return parse_error_t::kUnknownKeyword;
-      if (parent != nullptr)
+      if (parent)
         parent->subscopes.emplace_back(std::move(current_scope));
       else
         vcd.header.scopes.emplace_back(std::move(current_scope));
@@ -386,7 +385,7 @@ value_change_dump::parser::parse_scope_fwd(scope *parent) { // NOLINT(misc-no-re
     if (token == keywords::module) {
       if (auto res = parse_module(current_scope.get()); res != parse_error_t::kSuccess)
         return res;
-      if (parent != nullptr)
+      if (parent)
         parent->subscopes.emplace_back(std::move(current_scope));
       // else // already added in the upper lines
       // 	vcd.header.scopes.emplace_back(std::move(current_scope));

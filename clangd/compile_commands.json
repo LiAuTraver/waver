@@ -1,14 +1,20 @@
 [
 	{
 		"directory": "Z:/Cpp-Playground/waver/build",
-		"command": "C:\\PROGRA~1\\LLVM\\bin\\CLANG_~1.EXE -DABSL_CONSUME_DLL -isystem \"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/installed/x64-windows/include\" -O0 -std=gnu++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview @CMakeFiles\\waver.dir\\main.cpp.obj.modmap -o CMakeFiles\\waver.dir\\main.cpp.obj -c Z:\\Cpp-Playground\\waver\\main.cpp",
+		"command": "C:\\PROGRA~1\\LLVM\\bin\\clang-cl.exe  /nologo -TP -DABSL_CONSUME_DLL -DFMT_SHARED -IZ:\\Cpp-Playground\\waver\\include -imsvc\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg\\installed\\x64-windows\\include\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -clang:-std=c++23 -MDd -Zi -DWAVER_USE_BOOST_CONTRACT /FoCMakeFiles\\waver.dir\\main.cpp.obj /FdCMakeFiles\\waver.dir\\ -c -- Z:\\Cpp-Playground\\waver\\main.cpp",
 		"file": "Z:\\Cpp-Playground\\waver\\main.cpp",
 		"output": "CMakeFiles\\waver.dir\\main.cpp.obj"
 	},
 	{
 		"directory": "Z:/Cpp-Playground/waver/build",
-		"command": "C:\\PROGRA~1\\LLVM\\bin\\CLANG_~1.EXE -DABSL_CONSUME_DLL -isystem \"C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/installed/x64-windows/include\" -O0 -std=gnu++23 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -g -Xclang -gcodeview @CMakeFiles\\test.dir\\test.cpp.obj.modmap -o CMakeFiles\\test.dir\\test.cpp.obj -c Z:\\Cpp-Playground\\waver\\test.cpp",
-		"file": "Z:\\Cpp-Playground\\waver\\test.cpp",
-		"output": "CMakeFiles\\test.dir\\test.cpp.obj"
+		"command": "C:\\PROGRA~1\\LLVM\\bin\\clang-cl.exe  /nologo -TP -DABSL_CONSUME_DLL -DFMT_SHARED -DGTEST_LINKED_AS_SHARED_LIBRARY=1 -IZ:\\Cpp-Playground\\waver\\include -imsvc\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg\\installed\\x64-windows\\include\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -clang:-std=c++23 -MDd -Zi -DWAVER_USE_BOOST_CONTRACT /FoCMakeFiles\\waver_test.dir\\test\\test.cpp.obj /FdCMakeFiles\\waver_test.dir\\ -c -- Z:\\Cpp-Playground\\waver\\test\\test.cpp",
+		"file": "Z:\\Cpp-Playground\\waver\\test\\test.cpp",
+		"output": "CMakeFiles\\waver_test.dir\\test\\test.cpp.obj"
+	},
+	{
+		"directory": "Z:/Cpp-Playground/waver/build",
+		"command": "C:\\PROGRA~1\\LLVM\\bin\\clang-cl.exe  /nologo -TP -DBOOST_CONTAINER_DYN_LINK -DBOOST_CONTAINER_NO_LIB -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_NO_LIB -IZ:\\Cpp-Playground\\waver\\include -imsvc\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\vcpkg\\installed\\x64-windows\\include\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -clang:-std=c++23 -MDd -Zi -DWAVER_USE_BOOST_CONTRACT /FoCMakeFiles\\mytest2.dir\\mytest2.cpp.obj /FdCMakeFiles\\mytest2.dir\\ -c -- Z:\\Cpp-Playground\\waver\\mytest2.cpp",
+		"file": "Z:\\Cpp-Playground\\waver\\mytest2.cpp",
+		"output": "CMakeFiles\\mytest2.dir\\mytest2.cpp.obj"
 	}
 	]
